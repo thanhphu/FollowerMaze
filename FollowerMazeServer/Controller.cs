@@ -36,10 +36,24 @@ namespace FollowerMazeServer
             TcpListener Listener = new TcpListener(IP, InPort);
             while (!Worker.CancellationPending)
             {
-                Clients.Add(new Client(Listener.AcceptTcpClient()));
+                TcpClient Connection = Listener.AcceptTcpClient();
+                Client Instance = new Client(Connection);
+                Instance.OnIDAvailable += Instance_IDAvailable;
             }
         }
 
-        private ArrayList Clients;
+        private void Instance_IDAvailable(object sender, EventArgs e)
+        {
+            Client Instance = (Client)sender;
+            lock (this)
+            {
+                Clients[Instance.ID] = Instance;
+            }
+        }
+
+        /// <summary>
+        /// List of clients [client ID, client instance]
+        /// </summary>
+        private Dictionary<int, Client> Clients;
     }
 }
