@@ -17,16 +17,22 @@ namespace FollowerMazeServer
 
     class Payload
     {
-        public int ID;
-        public PayloadType Type;
-        public int From;
-        public int To;
+        public int ID { get; private set; }
+        public PayloadType Type { get; private set; }
+        public int From { get; private set; }
+        public int To { get; private set; }
+        public string Raw { get; private set; }
 
-        // Error may happen during initialization, so best to use factory pattern
+        // Error may happen during initialization, so it's best to use factory pattern
         private Payload()
         {            
         }
 
+        /// <summary>
+        /// Create a payload instance from raw data
+        /// </summary>
+        /// <param name="raw">raw payload data</param>
+        /// <returns>instance if data is valid, null otherwise</returns>
         public static Payload Create(string raw)
         {
             Payload Instance = new Payload();
@@ -83,6 +89,8 @@ namespace FollowerMazeServer
                     }
                 }
             }
+
+            Instance.Raw = raw;
 
             return Instance;
         }
