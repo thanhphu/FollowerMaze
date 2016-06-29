@@ -30,8 +30,9 @@ namespace FollowerMazeServer
             Messages = new ConcurrentQueue<Payload>();
             Followers = new List<int>();
 
-            this.Connection = Connection;            
+            this.Connection = Connection;
             this.Worker = new BackgroundWorker();
+            this.Worker.WorkerSupportsCancellation = true;
             this.Worker.DoWork += ClientMessageHandling;
             this.Worker.RunWorkerAsync();
         }
@@ -74,6 +75,7 @@ namespace FollowerMazeServer
                     ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
                 } catch
                 {
+                    Utils.Log($"Error reading client ID");
                     break;
                 }
                 string ID = System.Text.Encoding.UTF8.GetString(Incoming, 0, ReadBytes);

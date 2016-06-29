@@ -130,17 +130,26 @@ namespace FollowerMazeServer
             {
                 // Read new data
                 byte[] Incoming = new byte[Constants.BufferSize];
-                int ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
+                int ReadBytes;
+                try
+                {
+                    ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
+                } catch
+                {
+                    break;
+                }
 
                 // Append the previous data to the new data
-                {
-                    int newLength = ReadBytes + Buffer.Length;
-                    byte[] NewBuffer = new byte[newLength];
-                    Array.Copy(Buffer, NewBuffer, Buffer.Length);
-                    Array.Copy(Incoming, 0, NewBuffer, Buffer.Length, ReadBytes);
-                    Buffer = NewBuffer;
-                }
-                Buffer = ProcessBuffer(Buffer);                
+                int newLength = ReadBytes + Buffer.Length;
+                byte[] NewBuffer = new byte[newLength];
+                Array.Copy(Buffer, NewBuffer, Buffer.Length);
+                Array.Copy(Incoming, 0, NewBuffer, Buffer.Length, ReadBytes);
+                Buffer = NewBuffer;
+
+
+                Buffer = ProcessBuffer(Buffer);
+                Utils.Log("Processing event buffer");
+                Utils.Log(Buffer);
             }
             // Process the remaining buffer before quitting
             Buffer = ProcessBuffer(Buffer);

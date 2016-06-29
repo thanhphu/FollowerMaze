@@ -8,6 +8,14 @@ namespace FollowerMazeServer
 {
     class Utils
     {
+        public static int? FindNewLine(string buffer)
+        {
+            int Result = buffer.IndexOf("\r\n");
+            if (Result > 0)
+                return Result;
+            return null;
+        }
+
         public static int? FindNewLine(byte[] buffer)
         {
             for (int i = 0; i < buffer.Length - 1; i++)
