@@ -94,5 +94,12 @@ namespace FollowerMazeServer
 
             return Instance;
         }
-}
+
+        public override string ToString()
+        {
+            // Append back the line break cut from the protocol. If this doesn't work
+            // move to client class
+            return Raw + "\r\n";
+        }
+    }
 }

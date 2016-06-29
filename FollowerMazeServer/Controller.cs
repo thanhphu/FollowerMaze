@@ -18,6 +18,10 @@ namespace FollowerMazeServer
         private int ClientConnectionPort = 9099;
         private BackgroundWorker EventSourceWorker = new BackgroundWorker();
         private BackgroundWorker ClientWorker = new BackgroundWorker();
+
+        // Contains unhandled messages to be sent later
+        private List<Payload> Unhandled;
+
         // Triggered when a new event is received
         public event EventHandler<ServerEventArgs> OnEventAvailable;
         
@@ -27,29 +31,94 @@ namespace FollowerMazeServer
         public Controller()
         {
             Clients = new Dictionary<int, Client>();
+            Unhandled =  new List<Payload>();
 
             EventSourceWorker.WorkerSupportsCancellation = true;
-            EventSourceWorker.DoWork += EventSourceHandling;
-            EventSourceWorker.RunWorkerAsync();
-            Debug.WriteLine($"Event source listener started: {IP.ToString()}:{EventSourcePort}");
+            EventSourceWorker.DoWork += EventSourceHandling;            
 
             ClientWorker.WorkerSupportsCancellation = true;
             ClientWorker.DoWork += ClientConnectionHandling;
-            ClientWorker.RunWorkerAsync();
-            Debug.WriteLine($"Client listener started: {IP.ToString()}:{ClientConnectionPort}");
 
             OnEventAvailable += EventHandling;
         }
 
+        // Handler called when event arrives
         private void EventHandling(object sender, ServerEventArgs e)
         {
-            throw new NotImplementedException();
+            Payload P = Payload.Create(e.ServerEvent);
+            if (P == null) return;
+
+            Unhandled.Add(P);
+
+            foreach (var UnhandledPayload in Unhandled.ToList())
+            {
+                if (PayloadHandling(UnhandledPayload))
+                    Unhandled.Remove(UnhandledPayload);
+            }
+        }
+
+        // Handle a payload, returns true if it can be processed now, false otherwise
+        private bool PayloadHandling(Payload P)
+        {
+            switch (P.Type)
+            {
+                case PayloadType.Follow:
+                    if (Clients.ContainsKey(P.From) && Clients.ContainsKey(P.To))
+                    {
+                        Clients[P.From].AddFollower(P.To);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case PayloadType.Unfollow:
+                    if (Clients.ContainsKey(P.From) && Clients.ContainsKey(P.To))
+                    {
+                        return Clients[P.From].RemoveFollower(P.To);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case PayloadType.Broadcast:
+                    foreach (var Entry in Clients)
+                    {
+                        Entry.Value.Messages.Enqueue(P);
+                    }
+                    return true;
+                case PayloadType.Private:
+                    if (Clients.ContainsKey(P.From) && Clients.ContainsKey(P.To))
+                    {
+                        Clients[P.To].Messages.Enqueue(P);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case PayloadType.Status:
+                    if (Clients.ContainsKey(P.From))
+                    {
+                        foreach (int C in Clients[P.From].GetCurrentFollowers())
+                        {
+                            Clients[C].Messages.Enqueue(P);
+                        }
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+            }
+            return false;
         }
 
         private void EventSourceHandling(object sender, DoWorkEventArgs e)
         {
             const int BufferSize = Constants.BufferSize;
             TcpListener Listener = new TcpListener(IP, EventSourcePort);
+            Debug.WriteLine($"Event source listener started: {IP.ToString()}:{EventSourcePort}");
             TcpClient Connection = Listener.AcceptTcpClient();
 
             NetworkStream networkStream = Connection.GetStream();
@@ -94,12 +163,19 @@ namespace FollowerMazeServer
         private void ClientConnectionHandling(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(IP, ClientConnectionPort);
+            Debug.WriteLine($"Client listener started: {IP.ToString()}:{ClientConnectionPort}");
             while (!EventSourceWorker.CancellationPending)
             {
                 TcpClient Connection = Listener.AcceptTcpClient();
                 Client Instance = new Client(Connection);
                 Instance.OnIDAvailable += Instance_IDAvailable;
             }
+        }
+
+        public void Start()
+        {
+            EventSourceWorker.RunWorkerAsync();
+            ClientWorker.RunWorkerAsync();            
         }
 
         public void Stop()

@@ -8,11 +8,11 @@ namespace FollowerMazeServer
 {
     class ServerEventArgs: EventArgs
     {
-        public string Command { get; private set; }
+        public string ServerEvent { get; private set; }
 
         public ServerEventArgs(string Command)
         {
-            this.Command = Command;
+            this.ServerEvent = Command;
         }
     }
 }
