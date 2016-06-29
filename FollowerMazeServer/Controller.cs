@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace FollowerMazeServer
 {
-    class Controller
+    class Controller: IDisposable
     {
         private IPAddress IP = IPAddress.Any;
         private int EventSourcePort = 9090;
@@ -191,6 +191,13 @@ namespace FollowerMazeServer
             {
                 Clients[e.ID] = Instance;
             }
+        }
+
+        // Implements dispose pattern
+        public void Dispose()
+        {
+            ((IDisposable)EventSourceWorker).Dispose();
+            ((IDisposable)ClientWorker).Dispose();
         }
     }
 }

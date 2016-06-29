@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FollowerMazeServer
 {
-    class Client
+    class Client: IDisposable
     {
         public ConcurrentQueue<Payload> Messages { get; private set; }
         private List<int> Followers;
@@ -100,6 +100,11 @@ namespace FollowerMazeServer
         {
             Worker.CancelAsync();
             OnDisconnect?.Invoke(this, null);
+        }
+
+        void IDisposable.Dispose()
+        {
+            Worker.Dispose();
         }
     }
 }
