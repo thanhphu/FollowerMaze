@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FollowerMazeServer
 {
     class EventListener: IDisposable
     {
-        private IPAddress IP = IPAddress.Any;
-        private int EventSourcePort = 9090;
-        private int ClientConnectionPort = 9099;
+        
         private BackgroundWorker EventSourceWorker = new BackgroundWorker();
         private BackgroundWorker ClientWorker = new BackgroundWorker();
 
@@ -119,9 +114,8 @@ namespace FollowerMazeServer
 
         private void EventSourceHandling(object sender, DoWorkEventArgs e)
         {
-            const int BufferSize = Constants.BufferSize;
-            TcpListener Listener = new TcpListener(IP, EventSourcePort);
-            Debug.WriteLine($"Event source listener started: {IP.ToString()}:{EventSourcePort}");
+            TcpListener Listener = new TcpListener(Constants.IP, Constants.EventSourcePort);
+            Debug.WriteLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
             TcpClient Connection = Listener.AcceptTcpClient();
 
             NetworkStream networkStream = Connection.GetStream();
@@ -131,8 +125,8 @@ namespace FollowerMazeServer
             while (Connection.Connected)
             {
                 // Read new data
-                byte[] Incoming = new byte[BufferSize];
-                int ReadBytes = networkStream.Read(Incoming, 0, BufferSize);
+                byte[] Incoming = new byte[Constants.BufferSize];
+                int ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
 
                 // Append the previous data to the new data
                 {
@@ -177,8 +171,8 @@ namespace FollowerMazeServer
         
         private void ClientConnectionHandling(object sender, DoWorkEventArgs e)
         {
-            TcpListener Listener = new TcpListener(IP, ClientConnectionPort);
-            Debug.WriteLine($"Client listener started: {IP.ToString()}:{ClientConnectionPort}");
+            TcpListener Listener = new TcpListener(Constants.IP, Constants.ClientConnectionPort);
+            Debug.WriteLine($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
             while (!EventSourceWorker.CancellationPending)
             {
                 TcpClient Connection = Listener.AcceptTcpClient();
