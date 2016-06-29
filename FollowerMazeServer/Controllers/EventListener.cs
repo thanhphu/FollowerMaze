@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -38,10 +37,13 @@ namespace FollowerMazeServer
 
         private void EventHandlerWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            foreach (var UnhandledPayload in Unhandled.ToList())
+            while (!EventHandlerWorker.CancellationPending)
             {
-                if (PayloadHandled(UnhandledPayload))
-                    Unhandled.Remove(UnhandledPayload);
+                foreach (var UnhandledPayload in Unhandled.ToList())
+                {
+                    if (PayloadHandled(UnhandledPayload))
+                        Unhandled.Remove(UnhandledPayload);
+                }
             }
         }
 
@@ -73,13 +75,13 @@ namespace FollowerMazeServer
                 case PayloadType.Broadcast:
                     foreach (var Entry in Clients.Values)
                     {
-                        Entry.Messages.Enqueue(P);
+                        Entry.QueueMessage(P);
                     }
                     return true;
                 case PayloadType.Private:
                     if (Clients.ContainsKey(P.From) && Clients.ContainsKey(P.To))
                     {
-                        Clients[P.To].Messages.Enqueue(P);
+                        Clients[P.To].QueueMessage(P);
                         return true;
                     }
                     else
@@ -91,7 +93,7 @@ namespace FollowerMazeServer
                     {
                         foreach (int C in Clients[P.From].GetCurrentFollowers())
                         {
-                            Clients[C].Messages.Enqueue(P);
+                            Clients[C].QueueMessage(P);
                         }
                         return true;
                     }

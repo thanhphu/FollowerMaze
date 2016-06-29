@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace FollowerMazeServer
 {
@@ -14,7 +11,7 @@ namespace FollowerMazeServer
     {
         private int ClientID;
         private List<int> Followers;
-        public ConcurrentQueue<Payload> Messages { get; private set; }        
+        private Queue<Payload> Messages;
 
         BackgroundWorker Worker;
         TcpClient Connection;
@@ -27,7 +24,7 @@ namespace FollowerMazeServer
 
         public Client(TcpClient Connection)
         {
-            Messages = new ConcurrentQueue<Payload>();
+            Messages = new Queue<Payload>();
             Followers = new List<int>();
 
             this.Connection = Connection;
@@ -53,6 +50,14 @@ namespace FollowerMazeServer
                 Result = Followers.Remove(Target);
             }
             return Result;
+        }
+
+        public void QueueMessage(Payload Message)
+        {
+            lock (Messages)
+            {
+                Messages.Enqueue(Message);
+            }
         }
 
         public List<int> GetCurrentFollowers()
@@ -95,10 +100,10 @@ namespace FollowerMazeServer
                 OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
 
                 while (!Worker.CancellationPending)
-                {
-                    Payload Next;
-                    if (Messages.TryDequeue(out Next))
+                {                    
+                    while (Messages.Count > 0)
                     {
+                        Payload Next = Messages.Dequeue();
                         Utils.Log($"Sending message=${Next} from ClientID={ClientID}");
                         byte[] ToSend = System.Text.Encoding.UTF8.GetBytes(Next.ToString());
                         networkStream.Write(ToSend, 0, ToSend.Length);
