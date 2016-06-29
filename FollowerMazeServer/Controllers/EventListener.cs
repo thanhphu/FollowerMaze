@@ -139,23 +139,19 @@ namespace FollowerMazeServer
                 Utils.Log("Remaining buffer");
                 Utils.Log(Buffer);
             }
-            // Process the remaining buffer before quitting
-            Buffer = ProcessBuffer(Buffer, true);
             Connection.Close();
-            foreach (var KVP in Clients)
+            // Copy clients list on shutdown to avoid concurrency problems
+            foreach (var C in Clients.Values.ToList())
             {
-                KVP.Value.Shutdown();
+                C.Shutdown();
             }
             EventListenerWorker.CancelAsync();
             ClientWorker.CancelAsync();
         }
 
         // Tries to extract events and return the remaining buffer 
-        private byte[] ProcessBuffer(byte[] RawBuffer, bool LastBuffer = false)
+        private byte[] ProcessBuffer(byte[] RawBuffer)
         {
-            Utils.Log("Processing event buffer");
-            Utils.Log(RawBuffer);
-
             string Buffer = Encoding.UTF8.GetString(RawBuffer);
             string UnhandledBuffer = "";
             string[] Events = Buffer.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries);

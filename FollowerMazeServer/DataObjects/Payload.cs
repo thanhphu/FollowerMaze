@@ -47,7 +47,8 @@ namespace FollowerMazeServer
                 return null;
             }
 
-            if (components.Length < 2)
+            // If there's no type, or type is empty
+            if (components.Length < 2 || string.IsNullOrEmpty(components[1]))
                 return null;
 
             switch (components[1][0])
