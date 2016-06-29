@@ -71,9 +71,9 @@ namespace FollowerMazeServer
                         return false;
                     }
                 case PayloadType.Broadcast:
-                    foreach (var Entry in Clients)
+                    foreach (var Entry in Clients.Values)
                     {
-                        Entry.Value.Messages.Enqueue(P);
+                        Entry.Messages.Enqueue(P);
                     }
                     return true;
                 case PayloadType.Private:

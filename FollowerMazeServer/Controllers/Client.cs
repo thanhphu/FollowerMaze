@@ -67,7 +67,7 @@ namespace FollowerMazeServer
             do
             {
                 NetworkStream networkStream = Connection.GetStream();
-                while (!Connection.Connected)
+                while (!Connection.Connected && !Worker.CancellationPending)
                 {
                     // Wait
                 }
@@ -85,13 +85,12 @@ namespace FollowerMazeServer
                     break;
                 }
                 string ID = System.Text.Encoding.UTF8.GetString(Incoming, 0, ReadBytes);
-                Utils.Log($"Received ID from client ID={ID}");
-
                 // Invalid client ID? Close this connection
                 if (!int.TryParse(ID, out ClientID))
                 {
                     break;
                 }
+                Utils.Log($"Received ID from client ID={ClientID}");
 
                 OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
 
