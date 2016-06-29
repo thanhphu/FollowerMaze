@@ -12,8 +12,9 @@ namespace FollowerMazeServer
 {
     class Client: IDisposable
     {
-        public ConcurrentQueue<Payload> Messages { get; private set; }
+        private int ClientID;
         private List<int> Followers;
+        public ConcurrentQueue<Payload> Messages { get; private set; }        
 
         BackgroundWorker Worker;
         TcpClient Connection;
@@ -22,14 +23,14 @@ namespace FollowerMazeServer
         public event EventHandler<IDEventArgs> OnIDAvailable;
 
         // Triggered when the client disconnects
-        public event EventHandler OnDisconnect;
+        public event EventHandler<IDEventArgs> OnDisconnect;
 
-        public Client(TcpClient _Connection)
+        public Client(TcpClient Connection)
         {
             Messages = new ConcurrentQueue<Payload>();
             Followers = new List<int>();
 
-            this.Connection = _Connection;            
+            this.Connection = Connection;            
             this.Worker = new BackgroundWorker();
             this.Worker.DoWork += ClientMessageHandling;
             this.Worker.RunWorkerAsync();
@@ -65,17 +66,18 @@ namespace FollowerMazeServer
             NetworkStream networkStream = Connection.GetStream();
             byte[] Buffer = new Byte[0];
 
-            while (this.Connection.Connected && !Worker.CancellationPending)
+            while (Connection.Connected && !Worker.CancellationPending)
             {
                 // Read client ID
                 byte[] Incoming = new byte[Constants.BufferSize];
                 int ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
                 string ID = System.Text.Encoding.UTF8.GetString(Buffer, 0, ReadBytes);
-                int ClientID;
 
                 // Invalid client ID? Close this connection
                 if (!int.TryParse(ID, out ClientID))
-                    Shutdown();
+                {
+                    break;
+                }
 
                 OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
 
@@ -97,8 +99,11 @@ namespace FollowerMazeServer
 
         public void Shutdown()
         {
+            if (Connection.Connected)
+                Connection.Close();
             Worker.CancelAsync();
-            OnDisconnect?.Invoke(this, null);
+            // Event handler not set in this class, better check if it is properly assigned
+            OnDisconnect?.Invoke(this, new IDEventArgs(ClientID));
         }
 
         void IDisposable.Dispose()

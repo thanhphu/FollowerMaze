@@ -115,8 +115,10 @@ namespace FollowerMazeServer
         private void EventSourceHandling(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.EventSourcePort);
-            Debug.WriteLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
+            Listener.Start();
+            Utils.Log($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
             TcpClient Connection = Listener.AcceptTcpClient();
+            Utils.Log("Event source connected");
 
             NetworkStream networkStream = Connection.GetStream();
             byte[] Buffer = new Byte[0];
@@ -140,8 +142,13 @@ namespace FollowerMazeServer
             }
             // Process the remaining buffer before quitting
             Buffer = ProcessBuffer(Buffer);
-
-            this.EventSourceWorker.CancelAsync();
+            Connection.Close();
+            foreach (var KVP in Clients)
+            {
+                KVP.Value.Shutdown();
+            }
+            EventSourceWorker.CancelAsync();
+            ClientWorker.CancelAsync();
         }
 
         // Tries to extract events and return the remaining buffer 
@@ -163,8 +170,8 @@ namespace FollowerMazeServer
                 Array.Copy(Buffer, 0, NewBuffer, 0, Buffer.Length - Position.Value);
                 Buffer = NewBuffer;
 
-                Debug.WriteLine("Remaining buffer");
-                Debug.WriteLine(Encoding.UTF8.GetString(Buffer));
+                Utils.Log("Remaining buffer");
+                Utils.Log(Encoding.UTF8.GetString(Buffer));
             }
             return Buffer;
         }
@@ -172,25 +179,16 @@ namespace FollowerMazeServer
         private void ClientConnectionHandling(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.ClientConnectionPort);
-            Debug.WriteLine($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
-            while (!EventSourceWorker.CancellationPending)
+            Listener.Start();
+            Utils.Log($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
+            while (!ClientWorker.CancellationPending)
             {
                 TcpClient Connection = Listener.AcceptTcpClient();
                 Client Instance = new Client(Connection);
+                Utils.Log("Client connected");
                 Instance.OnIDAvailable += Instance_IDAvailable;
+                Instance.OnDisconnect += Instance_OnDisconnect;
             }
-        }
-
-        public void Start()
-        {
-            EventSourceWorker.RunWorkerAsync();
-            ClientWorker.RunWorkerAsync();            
-        }
-
-        public void Stop()
-        {
-            EventSourceWorker.CancelAsync();
-            ClientWorker.CancelAsync();
         }
 
         private void Instance_IDAvailable(object sender, IDEventArgs e)
@@ -202,11 +200,28 @@ namespace FollowerMazeServer
             }
         }
 
+        private void Instance_OnDisconnect(object sender, IDEventArgs e)
+        {
+            Clients.Remove(e.ID);
+        }
+
         // Implements dispose pattern
         public void Dispose()
         {
             ((IDisposable)EventSourceWorker).Dispose();
             ((IDisposable)ClientWorker).Dispose();
+        }
+
+        public void Start()
+        {
+            EventSourceWorker.RunWorkerAsync();
+            ClientWorker.RunWorkerAsync();
+        }
+
+        public void Stop()
+        {
+            EventSourceWorker.CancelAsync();
+            ClientWorker.CancelAsync();
         }
     }
 }

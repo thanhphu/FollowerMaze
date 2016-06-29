@@ -18,5 +18,13 @@ namespace FollowerMazeServer
             }
             return null;
         }
+
+        public static void Log(string Message)
+        {
+#if DEBUG
+            Console.WriteLine(Message);
+#else
+#endif
+        }
     }
 }
