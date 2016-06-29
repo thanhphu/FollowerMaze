@@ -145,14 +145,13 @@ namespace FollowerMazeServer
                 Array.Copy(Buffer, NewBuffer, Buffer.Length);
                 Array.Copy(Incoming, 0, NewBuffer, Buffer.Length, ReadBytes);
                 Buffer = NewBuffer;
-
-
+                
                 Buffer = ProcessBuffer(Buffer);
-                Utils.Log("Processing event buffer");
+                Utils.Log("Remaining buffer");
                 Utils.Log(Buffer);
             }
             // Process the remaining buffer before quitting
-            Buffer = ProcessBuffer(Buffer);
+            Buffer = ProcessBuffer(Buffer, true);
             Connection.Close();
             foreach (var KVP in Clients)
             {
@@ -163,29 +162,23 @@ namespace FollowerMazeServer
         }
 
         // Tries to extract events and return the remaining buffer 
-        private byte[] ProcessBuffer(byte[] Buffer)
+        private byte[] ProcessBuffer(byte[] RawBuffer, bool LastBuffer = false)
         {
-            // While there's a message to process
-            // Finds the new line in appended data
-            for (
-                int? Position = Utils.FindNewLine(Buffer);
-                Position.HasValue;
-                Position = Utils.FindNewLine(Buffer))
+            Utils.Log("Processing event buffer");
+            Utils.Log(RawBuffer);
+
+            string Buffer = Encoding.UTF8.GetString(RawBuffer);
+            // Terminates
+            if (LastBuffer)
+                Buffer += "\r\n";
+            string[] Events = Buffer.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < Events.Length - 1; i++)
             {
-                // Extracts the command
-                string EventData = System.Text.Encoding.UTF8.GetString(Buffer, 0, Position.Value);
+                string EventData = Events[i];
                 Utils.Log($"Received event={EventData}");
-                OnEventAvailable(this, new ServerEventArgs(EventData));
-
-                // Trim the processed command from the buffer
-                byte[] NewBuffer = new byte[Position.Value];
-                Array.Copy(Buffer, 0, NewBuffer, 0, Buffer.Length - Position.Value);
-                Buffer = NewBuffer;
-
-                Utils.Log("Remaining buffer");
-                Utils.Log(Buffer);
+                OnEventAvailable(this, new ServerEventArgs(EventData));                
             }
-            return Buffer;
+            return Encoding.UTF8.GetBytes(Buffer);
         }
         
         private void ClientConnectionHandling(object sender, DoWorkEventArgs e)
