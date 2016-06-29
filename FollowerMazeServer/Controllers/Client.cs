@@ -64,14 +64,12 @@ namespace FollowerMazeServer
         private void ClientMessageHandling(object sender, DoWorkEventArgs e)
         {
             NetworkStream networkStream = Connection.GetStream();
-            byte[] Buffer = new Byte[0];
-
             while (Connection.Connected && !Worker.CancellationPending)
             {
                 // Read client ID
                 byte[] Incoming = new byte[Constants.BufferSize];
                 int ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
-                string ID = System.Text.Encoding.UTF8.GetString(Buffer, 0, ReadBytes);
+                string ID = System.Text.Encoding.UTF8.GetString(Incoming, 0, ReadBytes);
 
                 // Invalid client ID? Close this connection
                 if (!int.TryParse(ID, out ClientID))

@@ -40,6 +40,7 @@ namespace FollowerMazeServer
         // Handler called when event arrives
         private void EventHandling(object sender, ServerEventArgs e)
         {
+            Utils.Log($"Received event {e.ServerEvent}");
             Payload P = Payload.Create(e.ServerEvent);
             if (P == null) return;
 
@@ -58,6 +59,7 @@ namespace FollowerMazeServer
         // Handle a payload, returns true if it can be processed now, false otherwise
         private bool PayloadHandling(Payload P)
         {
+            Utils.Log($"Handling event {P.ToString()}");
             switch (P.Type)
             {
                 case PayloadType.Follow:
