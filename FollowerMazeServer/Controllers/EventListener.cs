@@ -164,8 +164,9 @@ namespace FollowerMazeServer
                 Position = Utils.FindNewLine(Buffer))
             {
                 // Extracts the command
-                string Command = System.Text.Encoding.UTF8.GetString(Buffer, 0, Position.Value);
-                OnEventAvailable(this, new ServerEventArgs(Command));
+                string EventData = System.Text.Encoding.UTF8.GetString(Buffer, 0, Position.Value);
+                Utils.Log($"Received event={EventData}");
+                OnEventAvailable(this, new ServerEventArgs(EventData));
 
                 // Trim the processed command from the buffer
                 byte[] NewBuffer = new byte[Position.Value];
@@ -173,7 +174,7 @@ namespace FollowerMazeServer
                 Buffer = NewBuffer;
 
                 Utils.Log("Remaining buffer");
-                Utils.Log(Encoding.UTF8.GetString(Buffer));
+                Utils.Log(Buffer);
             }
             return Buffer;
         }

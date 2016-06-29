@@ -26,5 +26,13 @@ namespace FollowerMazeServer
 #else
 #endif
         }
+
+        public static void Log(byte[] Array)
+        {
+#if DEBUG
+            Console.WriteLine(System.Text.Encoding.UTF8.GetString(Array));
+#else
+#endif
+        }
     }
 }

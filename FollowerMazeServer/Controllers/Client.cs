@@ -68,8 +68,16 @@ namespace FollowerMazeServer
             {
                 // Read client ID
                 byte[] Incoming = new byte[Constants.BufferSize];
-                int ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
+                int ReadBytes;
+                try
+                {
+                    ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
+                } catch
+                {
+                    break;
+                }
                 string ID = System.Text.Encoding.UTF8.GetString(Incoming, 0, ReadBytes);
+                Utils.Log($"Received ID from client ID={ID}");
 
                 // Invalid client ID? Close this connection
                 if (!int.TryParse(ID, out ClientID))
@@ -84,6 +92,7 @@ namespace FollowerMazeServer
                     Payload Next;
                     if (Messages.TryDequeue(out Next))
                     {
+                        Utils.Log($"Sending message=${Next} from ClientID={ClientID}");
                         byte[] ToSend = System.Text.Encoding.UTF8.GetBytes(Next.ToString());
                         networkStream.Write(ToSend, 0, ToSend.Length);
                     }
