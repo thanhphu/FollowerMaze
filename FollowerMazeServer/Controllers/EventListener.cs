@@ -23,7 +23,7 @@ namespace FollowerMazeServer
         private List<Payload> Unhandled;
 
         // Triggered when a new event is received
-        public event EventHandler<ServerEventArgs> OnEventAvailable;
+        private event EventHandler<ServerEventArgs> OnEventAvailable;
         
         // List of clients [client ID, client instance]
         private Dictionary<int, Client> Clients;
@@ -48,7 +48,10 @@ namespace FollowerMazeServer
             Payload P = Payload.Create(e.ServerEvent);
             if (P == null) return;
 
-            Unhandled.Add(P);
+            lock (Unhandled)
+            {
+                Unhandled.Add(P);
+            }
 
             foreach (var UnhandledPayload in Unhandled.ToList())
             {
@@ -124,6 +127,7 @@ namespace FollowerMazeServer
             NetworkStream networkStream = Connection.GetStream();
             byte[] Buffer = new Byte[0];
 
+            // Stop when event source disconnects
             while (Connection.Connected)
             {
                 // Read new data
@@ -138,26 +142,37 @@ namespace FollowerMazeServer
                     Array.Copy(Incoming, 0, NewBuffer, Buffer.Length, ReadBytes);
                     Buffer = NewBuffer;
                 }
-
-                // While there's a message to process
-                // Finds the new line in appended data
-                for (
-                    int? Position = Utils.FindNewLine(Buffer);
-                    Position.HasValue;
-                    Position = Utils.FindNewLine(Buffer))
-                {
-                    // Extracts the command
-                    string Command = System.Text.Encoding.UTF8.GetString(Buffer, 0, Position.Value);
-                    OnEventAvailable(this, new ServerEventArgs(Command));
-
-                    // Trim the processed command from the buffer
-                    byte[] NewBuffer = new byte[Position.Value];
-                    Array.Copy(Buffer, 0, NewBuffer, 0, Buffer.Length - Position.Value);
-                    Buffer = NewBuffer;
-                }
+                Buffer = ProcessBuffer(Buffer);                
             }
-            // TODO Process the remaining buffer before quitting
+            // Process the remaining buffer before quitting
+            Buffer = ProcessBuffer(Buffer);
+
             this.EventSourceWorker.CancelAsync();
+        }
+
+        // Tries to extract events and return the remaining buffer 
+        private byte[] ProcessBuffer(byte[] Buffer)
+        {
+            // While there's a message to process
+            // Finds the new line in appended data
+            for (
+                int? Position = Utils.FindNewLine(Buffer);
+                Position.HasValue;
+                Position = Utils.FindNewLine(Buffer))
+            {
+                // Extracts the command
+                string Command = System.Text.Encoding.UTF8.GetString(Buffer, 0, Position.Value);
+                OnEventAvailable(this, new ServerEventArgs(Command));
+
+                // Trim the processed command from the buffer
+                byte[] NewBuffer = new byte[Position.Value];
+                Array.Copy(Buffer, 0, NewBuffer, 0, Buffer.Length - Position.Value);
+                Buffer = NewBuffer;
+
+                Debug.WriteLine("Remaining buffer");
+                Debug.WriteLine(Encoding.UTF8.GetString(Buffer));
+            }
+            return Buffer;
         }
         
         private void ClientConnectionHandling(object sender, DoWorkEventArgs e)
