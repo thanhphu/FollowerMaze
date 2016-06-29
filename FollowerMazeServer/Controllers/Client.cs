@@ -62,15 +62,14 @@ namespace FollowerMazeServer
 
         private void ClientMessageHandling(object sender, DoWorkEventArgs e)
         {
-            const int BufferSize = Constants.BufferSize;
             NetworkStream networkStream = Connection.GetStream();
             byte[] Buffer = new Byte[0];
 
             while (this.Connection.Connected && !Worker.CancellationPending)
             {
                 // Read client ID
-                byte[] Incoming = new byte[BufferSize];
-                int ReadBytes = networkStream.Read(Incoming, 0, BufferSize);
+                byte[] Incoming = new byte[Constants.BufferSize];
+                int ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
                 string ID = System.Text.Encoding.UTF8.GetString(Buffer, 0, ReadBytes);
                 int ClientID;
 
