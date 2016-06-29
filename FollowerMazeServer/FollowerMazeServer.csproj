@@ -48,7 +48,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Controllers\EventListener.cs" />
     <Compile Include="DataObjects\IDEventArgs.cs" />
-    <Compile Include="Payload.cs" />
+    <Compile Include="DataObjects\Payload.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />
