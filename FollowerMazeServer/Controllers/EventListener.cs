@@ -11,14 +11,12 @@ namespace FollowerMazeServer
     class EventListener: IDisposable
     {
         
-        private BackgroundWorker EventSourceWorker = new BackgroundWorker();
+        private BackgroundWorker EventListenerWorker = new BackgroundWorker();
+        private BackgroundWorker EventHandlerWorker = new BackgroundWorker();
         private BackgroundWorker ClientWorker = new BackgroundWorker();
 
         // Contains unhandled messages to be sent later
         private List<Payload> Unhandled;
-
-        // Triggered when a new event is received
-        private event EventHandler<ServerEventArgs> OnEventAvailable;
         
         // List of clients [client ID, client instance]
         private Dictionary<int, Client> Clients;
@@ -28,38 +26,29 @@ namespace FollowerMazeServer
             Clients = new Dictionary<int, Client>();
             Unhandled =  new List<Payload>();
 
-            EventSourceWorker.WorkerSupportsCancellation = true;
-            EventSourceWorker.DoWork += EventSourceHandling;            
+            EventListenerWorker.WorkerSupportsCancellation = true;
+            EventListenerWorker.DoWork += EventListenerWorker_DoWork;            
 
             ClientWorker.WorkerSupportsCancellation = true;
-            ClientWorker.DoWork += ClientConnectionHandling;
+            ClientWorker.DoWork += ClientWorker_DoWork;
 
-            OnEventAvailable += EventHandling;
+            EventHandlerWorker.WorkerSupportsCancellation = true;
+            EventHandlerWorker.DoWork += EventHandlerWorker_DoWork;
         }
 
-        // Handler called when event arrives
-        private void EventHandling(object sender, ServerEventArgs e)
+        private void EventHandlerWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            Utils.Log($"Received event {e.ServerEvent}");
-            Payload P = Payload.Create(e.ServerEvent);
-            if (P == null) return;
-
-            lock (Unhandled)
-            {
-                Unhandled.Add(P);
-            }
-
             foreach (var UnhandledPayload in Unhandled.ToList())
             {
-                if (PayloadHandling(UnhandledPayload))
+                if (PayloadHandled(UnhandledPayload))
                     Unhandled.Remove(UnhandledPayload);
             }
         }
 
         // Handle a payload, returns true if it can be processed now, false otherwise
-        private bool PayloadHandling(Payload P)
+        private bool PayloadHandled(Payload P)
         {
-            Utils.Log($"Handling event {P.ToString()}");
+            Utils.Log($"Sending event {P.ToString()}");
             switch (P.Type)
             {
                 case PayloadType.Follow:
@@ -114,7 +103,7 @@ namespace FollowerMazeServer
             return false;
         }
 
-        private void EventSourceHandling(object sender, DoWorkEventArgs e)
+        private void EventListenerWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.EventSourcePort);
             Listener.Start();
@@ -157,7 +146,7 @@ namespace FollowerMazeServer
             {
                 KVP.Value.Shutdown();
             }
-            EventSourceWorker.CancelAsync();
+            EventListenerWorker.CancelAsync();
             ClientWorker.CancelAsync();
         }
 
@@ -168,20 +157,28 @@ namespace FollowerMazeServer
             Utils.Log(RawBuffer);
 
             string Buffer = Encoding.UTF8.GetString(RawBuffer);
-            // Terminates
-            if (LastBuffer)
-                Buffer += "\r\n";
+            string UnhandledBuffer = "";
             string[] Events = Buffer.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries);
-            for (int i = 0; i < Events.Length - 1; i++)
+            foreach (string EventData in Events)
             {
-                string EventData = Events[i];
                 Utils.Log($"Received event={EventData}");
-                OnEventAvailable(this, new ServerEventArgs(EventData));                
+                // Try to parse, the event may be partially received (invalid), this will skip it
+                Payload P = Payload.Create(EventData);
+                if (P == null)
+                {
+                    UnhandledBuffer += "\r\n" + EventData;
+                    continue;
+                }
+
+                lock (Unhandled)
+                {
+                    Unhandled.Add(P);
+                }
             }
-            return Encoding.UTF8.GetBytes(Buffer);
+            return Encoding.UTF8.GetBytes(UnhandledBuffer);
         }
         
-        private void ClientConnectionHandling(object sender, DoWorkEventArgs e)
+        private void ClientWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.ClientConnectionPort);
             Listener.Start();
@@ -213,20 +210,23 @@ namespace FollowerMazeServer
         // Implements dispose pattern
         public void Dispose()
         {
-            ((IDisposable)EventSourceWorker).Dispose();
-            ((IDisposable)ClientWorker).Dispose();
+            EventListenerWorker.Dispose();
+            ClientWorker.Dispose();
+            EventHandlerWorker.Dispose();
         }
 
         public void Start()
         {
-            EventSourceWorker.RunWorkerAsync();
+            EventListenerWorker.RunWorkerAsync();
             ClientWorker.RunWorkerAsync();
+            EventHandlerWorker.RunWorkerAsync();
         }
 
         public void Stop()
         {
-            EventSourceWorker.CancelAsync();
+            EventListenerWorker.CancelAsync();
             ClientWorker.CancelAsync();
+            EventHandlerWorker.CancelAsync();
         }
     }
 }

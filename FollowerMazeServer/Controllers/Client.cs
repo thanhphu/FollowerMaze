@@ -64,16 +64,22 @@ namespace FollowerMazeServer
 
         private void ClientMessageHandling(object sender, DoWorkEventArgs e)
         {
-            NetworkStream networkStream = Connection.GetStream();
-            while (Connection.Connected && !Worker.CancellationPending)
+            do
             {
+                NetworkStream networkStream = Connection.GetStream();
+                while (!Connection.Connected)
+                {
+                    // Wait
+                }
+
                 // Read client ID
                 byte[] Incoming = new byte[Constants.BufferSize];
                 int ReadBytes;
                 try
                 {
                     ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
-                } catch
+                }
+                catch
                 {
                     Utils.Log($"Error reading client ID");
                     break;
@@ -89,7 +95,7 @@ namespace FollowerMazeServer
 
                 OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
 
-                while (Messages.Count > 0)
+                while (!Worker.CancellationPending)
                 {
                     Payload Next;
                     if (Messages.TryDequeue(out Next))
@@ -98,10 +104,10 @@ namespace FollowerMazeServer
                         byte[] ToSend = System.Text.Encoding.UTF8.GetBytes(Next.ToString());
                         networkStream.Write(ToSend, 0, ToSend.Length);
                     }
+                    Thread.Sleep(Constants.WorkerDelay);
                 }
+            } while (false); // Loop only once, trick here to use the breaks
 
-                Thread.Sleep(Constants.WorkerDelay);
-            }
             // Process the remaining buffer before quitting
             Shutdown();
         }
