@@ -43,11 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client.cs" />
-    <Compile Include="ServerEventArgs.cs" />
+    <Compile Include="Controllers\Client.cs" />
+    <Compile Include="DataObjects\ServerEventArgs.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="Controller.cs" />
-    <Compile Include="IDEventArgs.cs" />
+    <Compile Include="Controllers\Controller.cs" />
+    <Compile Include="DataObjects\IDEventArgs.cs" />
     <Compile Include="Payload.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

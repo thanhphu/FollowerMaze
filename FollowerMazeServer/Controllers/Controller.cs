@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace FollowerMazeServer
 {
-    class Controller: IDisposable
+    class EventListener: IDisposable
     {
         private IPAddress IP = IPAddress.Any;
         private int EventSourcePort = 9090;
@@ -28,7 +28,7 @@ namespace FollowerMazeServer
         // List of clients [client ID, client instance]
         private Dictionary<int, Client> Clients;
 
-        public Controller()
+        public EventListener()
         {
             Clients = new Dictionary<int, Client>();
             Unhandled =  new List<Payload>();
