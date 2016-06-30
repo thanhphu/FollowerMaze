@@ -26,7 +26,8 @@ namespace FollowerMazeServer
         {
             Messages = new Queue<Payload>();
             Followers = new List<int>();
-
+            Connection.ReceiveTimeout = -1;
+            Connection.SendTimeout = -1;
             this.Connection = Connection;
             this.Worker = new BackgroundWorker();
             this.Worker.WorkerSupportsCancellation = true;
@@ -71,7 +72,7 @@ namespace FollowerMazeServer
 
         private void ProcessClientID(IAsyncResult AR)
         {
-            NetworkStream networkStream = (NetworkStream)AR;
+            NetworkStream networkStream = (NetworkStream)AR.AsyncState;
             int ReadBytes = networkStream.EndRead(AR);
 
             // Read client ID            
@@ -88,9 +89,11 @@ namespace FollowerMazeServer
 
         private void ClientMessageHandling(object sender, DoWorkEventArgs e)
         {
-            do
+            NetworkStream networkStream;
+            
+            try
             {
-                NetworkStream networkStream = Connection.GetStream();
+                networkStream = Connection.GetStream();
                 networkStream.BeginRead(
                     Incoming,
                     0,
@@ -99,7 +102,7 @@ namespace FollowerMazeServer
                     networkStream);
 
                 while (!Worker.CancellationPending)
-                {                    
+                {
                     while (Messages.Count > 0)
                     {
                         Payload Next = Messages.Dequeue();
@@ -109,16 +112,14 @@ namespace FollowerMazeServer
                     }
                     Thread.Sleep(Constants.WorkerDelay);
                 }
-            } while (false); // Loop only once, trick here to use the breaks
-
-            // Process the remaining buffer before quitting
+            } catch {
+                Utils.Log("Client shutdown!");                
+            }
             Shutdown();
         }
 
         public void Shutdown()
         {
-            if (Connection.Connected)
-                Connection.Close();
             Worker.CancelAsync();
             // Event handler not set in this class, better check if it is properly assigned
             OnDisconnect?.Invoke(this, new IDEventArgs(ClientID));
