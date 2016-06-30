@@ -23,6 +23,8 @@ namespace FollowerMazeServer
         // Clients connected but didn't sent their ID yet
         private List<Client> PendingClients;
 
+        private int ProcessedCount = 0;
+
         public EventListener()
         {
             Clients = new Dictionary<int, Client>();
@@ -52,6 +54,7 @@ namespace FollowerMazeServer
                 {
                     if (PayloadHandled(UnhandledPayload))
                     {
+                        ProcessedCount++;
                         lock (Unhandled)
                         {
                             Unhandled.Remove(UnhandledPayload.ID);
@@ -164,13 +167,13 @@ namespace FollowerMazeServer
         {
             string Buffer = Encoding.UTF8.GetString(RawBuffer);
             string UnhandledBuffer = "";
-            string[] Events = Buffer.Split(new string[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries);
+            string[] Events = Buffer.Split(new char[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
             foreach (string EventData in Events)
             {
                 Utils.Log($"Received event={EventData}");
                 // Try to parse, the event may be partially received (invalid), this will skip it
                 Payload P = Payload.Create(EventData);
-                if (P == null)
+                if (P == null || Unhandled.ContainsKey(P.ID))
                 {
                     UnhandledBuffer += "\r\n" + EventData;
                     continue;
@@ -198,7 +201,7 @@ namespace FollowerMazeServer
                 Instance.OnDisconnect += Instance_OnDisconnect;
                 PendingClients.Add(Instance);
 
-                Console.Write($"\rPending clients={PendingClients.Count} Connected={Clients.Count} PendingMessages={Unhandled.Count}   ");
+                Console.Write($"\rClients: Pending={PendingClients.Count} Connected={Clients.Count} Messages: Pending={Unhandled.Count} Processed={ProcessedCount}  ");
             }
         }
 
