@@ -15,7 +15,7 @@ namespace FollowerMazeServer
         private BackgroundWorker ClientWorker = new BackgroundWorker();
 
         // Contains unhandled messages to be sent later
-        private Dictionary<int, Payload> Unhandled;
+        private SortedList<int, Payload> Unhandled;
         
         // List of clients [client ID, client instance]
         private Dictionary<int, Client> Clients;
@@ -28,7 +28,7 @@ namespace FollowerMazeServer
         public EventListener()
         {
             Clients = new Dictionary<int, Client>();
-            Unhandled = new Dictionary<int, Payload>();
+            Unhandled = new SortedList<int, Payload>();
             PendingClients = new List<Client>();
 
             EventListenerWorker.WorkerSupportsCancellation = true;
@@ -74,6 +74,7 @@ namespace FollowerMazeServer
                     if (Clients.ContainsKey(P.From) && Clients.ContainsKey(P.To))
                     {
                         Clients[P.From].AddFollower(P.To);
+                        Clients[P.To].QueueMessage(P);
                         return true;
                     }
                     else
@@ -81,7 +82,7 @@ namespace FollowerMazeServer
                         return false;
                     }
                 case PayloadType.Unfollow:
-                    if (Clients.ContainsKey(P.From) && Clients.ContainsKey(P.To))
+                    if (Clients.ContainsKey(P.From))
                     {
                         return Clients[P.From].RemoveFollower(P.To);
                     }
@@ -108,7 +109,14 @@ namespace FollowerMazeServer
                 case PayloadType.Status:
                     if (Clients.ContainsKey(P.From))
                     {
-                        foreach (int C in Clients[P.From].GetCurrentFollowers())
+                        List<int> Followers = Clients[P.From].GetCurrentFollowers();
+                        // One of the clients didn't connect yet, wait!
+                        foreach (int C in Followers)
+                        {
+                            if (!Clients.ContainsKey(C))
+                                return false;
+                        }
+                        foreach (int C in Followers)
                         {
                             Clients[C].QueueMessage(P);
                         }
@@ -173,7 +181,7 @@ namespace FollowerMazeServer
                 Utils.Log($"Received event={EventData}");
                 // Try to parse, the event may be partially received (invalid), this will skip it
                 Payload P = Payload.Create(EventData);
-                if (P == null || Unhandled.ContainsKey(P.ID))
+                if (P == null)
                 {
                     UnhandledBuffer += "\r\n" + EventData;
                     continue;
@@ -181,7 +189,9 @@ namespace FollowerMazeServer
 
                 lock (Unhandled)
                 {
-                    Unhandled.Add(P.ID, P);
+                    if (Unhandled.Count > 10000)
+                        Unhandled = new SortedList<int, Payload>();
+                    Unhandled[P.ID] = P;
                 }
             }
             return Encoding.UTF8.GetBytes(UnhandledBuffer);

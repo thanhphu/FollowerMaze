@@ -8,16 +8,14 @@ namespace FollowerMazeServer
         {
 #if DEBUG
             if (
-                false
-                /*
                 !Message.Contains("Send") &&
                 !Message.Contains("Received event") &&
                 !Message.Contains("Remaining") &&
                 !Message.Contains("connected") &&
-                !Message.Contains("Shutdown") &&
-                !Message.Contains("Buffer")*/)
+                !Message.Contains("hutdown") &&
+                !Message.Contains("Buffer"))
             {
-                Console.WriteLine(Message.TrimEnd());
+                // Console.Write(" " + Message.TrimEnd());
             }
 #else
 #endif
