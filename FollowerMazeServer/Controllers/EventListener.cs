@@ -183,10 +183,11 @@ namespace FollowerMazeServer
                     continue;
                 }
 
-                lock (Unhandled)
-                {
-                    Unhandled[P.ID] = P;
-                }
+                if (!Unhandled.ContainsKey(P.ID))
+                    lock (Unhandled)
+                    {
+                        Unhandled[P.ID] = P;
+                    }
             }
             return Encoding.UTF8.GetBytes(UnhandledBuffer);
         }
@@ -203,7 +204,9 @@ namespace FollowerMazeServer
                 Utils.Log("Client connected");
                 Instance.OnIDAvailable += Instance_IDAvailable;
                 Instance.OnDisconnect += Instance_OnDisconnect;
-                PendingClients.Add(Instance);                
+                PendingClients.Add(Instance);
+
+                Instance.Start();
             }
         }
 
@@ -257,12 +260,12 @@ namespace FollowerMazeServer
             // Copy clients list on shutdown to avoid concurrency problems
             foreach (var C in Clients.Values.ToList())
             {
-                C.Shutdown();
+                C.Stop();
             }
 
             foreach (var C in PendingClients)
             {
-                C.Shutdown();
+                C.Stop();
             }
         }
     }

@@ -101,8 +101,10 @@
 
         public bool ShouldRetry()
         {
+            return false;
+
             RetryCount++;
-            if (RetryCount > 1)
+            if (RetryCount > 10)
                 return false;
             return true;
         }

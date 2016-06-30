@@ -30,6 +30,10 @@ namespace FollowerMazeServer
             Connection.SendTimeout = -1;
             this.Connection = Connection;
             Worker = new Thread(new ThreadStart(ClientMessageHandling));
+        }
+
+        public void Start()
+        {            
             Worker.Start();
         }
 
@@ -79,7 +83,7 @@ namespace FollowerMazeServer
             // Invalid client ID? Close this connection
             if (!int.TryParse(ID, out ClientID))
             {
-                Shutdown();
+                Stop();
             }
             Utils.Log($"Received ID from client ID={ClientID}");
             OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
@@ -113,10 +117,10 @@ namespace FollowerMazeServer
             } catch {
                 Utils.Log("Client shutdown!");                
             }
-            Shutdown();
+            Stop();
         }
 
-        public void Shutdown()
+        public void Stop()
         {
             Worker.Abort();
             // Event handler not set in this class, better check if it is properly assigned

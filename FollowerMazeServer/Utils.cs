@@ -7,13 +7,16 @@ namespace FollowerMazeServer
     {
         static List<string> Buffer = new List<string>();
         const string Path = "E:\\Log.txt";
-        static bool First = false;
+        static bool First = true;
 
         public static void Log(string Message)
         {
 #if DEBUG
             if (First)
+            {
+                First = false;
                 System.IO.File.Delete(Path);
+            }
             lock (Buffer)
             { 
                 Buffer.Add(Message.TrimEnd());
