@@ -61,6 +61,7 @@ namespace FollowerMazeServer
                         }
                     }
                 }
+                UpdateStatus();
             }
         }
 
@@ -189,8 +190,6 @@ namespace FollowerMazeServer
 
                 lock (Unhandled)
                 {
-                    if (Unhandled.Count > 10000)
-                        Unhandled = new SortedList<int, Payload>();
                     Unhandled[P.ID] = P;
                 }
             }
@@ -209,10 +208,16 @@ namespace FollowerMazeServer
                 Utils.Log("Client connected");
                 Instance.OnIDAvailable += Instance_IDAvailable;
                 Instance.OnDisconnect += Instance_OnDisconnect;
-                PendingClients.Add(Instance);
-
-                Console.Write($"\rClients: Pending={PendingClients.Count} Connected={Clients.Count} Messages: Pending={Unhandled.Count} Processed={ProcessedCount}  ");
+                PendingClients.Add(Instance);                
             }
+        }
+
+        private void UpdateStatus()
+        {
+            if (ProcessedCount == 0)
+                return;
+            Console.Write($"\r{DateTime.Now.ToLongTimeString()} Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
+                    $"Messages: Pending={Unhandled.Count} Processed={ProcessedCount}  ");
         }
 
         private void Instance_IDAvailable(object sender, IDEventArgs e)
