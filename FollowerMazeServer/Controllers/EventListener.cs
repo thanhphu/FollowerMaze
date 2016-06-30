@@ -4,12 +4,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Timers;
 
 namespace FollowerMazeServer
 {
     class EventListener: IDisposable
-    {
-        
+    {   
         private BackgroundWorker EventListenerWorker = new BackgroundWorker();
         private BackgroundWorker EventHandlerWorker = new BackgroundWorker();
         private BackgroundWorker ClientWorker = new BackgroundWorker();
@@ -23,7 +23,11 @@ namespace FollowerMazeServer
         // Clients connected but didn't sent their ID yet
         private List<Client> PendingClients;
 
-        private int ProcessedCount = 0;
+        // Timer to wait before sending out messages
+        Timer GraceTimer;
+
+        // Number of messages processed, for statistics
+        private int ProcessedCount = 0;        
 
         public EventListener()
         {
@@ -65,6 +69,11 @@ namespace FollowerMazeServer
             }
         }
 
+        private bool IsAllClientsConnected()
+        {
+            return (Clients.Count > 0) && (PendingClients.Count == 0) && (GraceTimer.Enabled == false);
+        }
+
         // Handle a payload, returns true if it can be processed now, false otherwise
         private bool PayloadHandled(Payload P)
         {
@@ -72,25 +81,20 @@ namespace FollowerMazeServer
             switch (P.Type)
             {
                 case PayloadType.Follow:
-                    if (Clients.ContainsKey(P.From) && Clients.ContainsKey(P.To))
+                    if (Clients.ContainsKey(P.To))
                     {
-                        Clients[P.From].AddFollower(P.To);
+                        if (Clients.ContainsKey(P.From))
+                            Clients[P.From].AddFollower(P.To);
                         Clients[P.To].QueueMessage(P);
                         return true;
                     }
-                    else
-                    {
-                        return false;
-                    }
+                    break;
                 case PayloadType.Unfollow:
                     if (Clients.ContainsKey(P.From))
                     {
                         return Clients[P.From].RemoveFollower(P.To);
                     }
-                    else
-                    {
-                        return false;
-                    }
+                    break;
                 case PayloadType.Broadcast:
                     foreach (var Entry in Clients.Values)
                     {
@@ -103,10 +107,7 @@ namespace FollowerMazeServer
                         Clients[P.To].QueueMessage(P);
                         return true;
                     }
-                    else
-                    {
-                        return false;
-                    }
+                    break;
                 case PayloadType.Status:
                     if (Clients.ContainsKey(P.From))
                     {
@@ -118,12 +119,13 @@ namespace FollowerMazeServer
                         }
                         return true;
                     }
-                    else
-                    {
-                        return false;
-                    }
+                    break;
             }
-            return !P.ShouldRetry();
+
+            // If all clients connected and the packet is invalid, dispose it
+            // If packet has been retried too many times, dispose it
+            bool ShouldRetry = !IsAllClientsConnected() && P.ShouldRetry();
+            return !ShouldRetry;
         }
 
         private void EventListenerWorker_DoWork(object sender, DoWorkEventArgs e)
@@ -133,6 +135,9 @@ namespace FollowerMazeServer
             Console.WriteLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
             TcpClient Connection = Listener.AcceptTcpClient();
             Utils.Log("Event source connected");
+
+            // Start the timer
+            GraceTimer.Enabled = true;
 
             NetworkStream networkStream = Connection.GetStream();
             byte[] Buffer = new Byte[0];
@@ -207,6 +212,7 @@ namespace FollowerMazeServer
                 PendingClients.Add(Instance);
 
                 Instance.Start();
+                UpdateStatus();
             }
         }
 
@@ -248,6 +254,15 @@ namespace FollowerMazeServer
         {
             EventListenerWorker.RunWorkerAsync();
             ClientWorker.RunWorkerAsync();
+
+            GraceTimer = new Timer();
+            GraceTimer.Interval = Constants.GracePeriod;
+            GraceTimer.Elapsed += GraceTimer_Elapsed;            
+        }
+
+        private void GraceTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            GraceTimer.Enabled = false;
             EventHandlerWorker.RunWorkerAsync();
         }
 

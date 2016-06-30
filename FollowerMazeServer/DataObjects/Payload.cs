@@ -92,8 +92,7 @@
 
         public override string ToString()
         {
-            // Append back the line break cut from the protocol. If this doesn't work
-            // move to client class
+            // Append back the line break cut from the protocol
             return Raw + "\r\n";
         }
 
@@ -101,10 +100,8 @@
 
         public bool ShouldRetry()
         {
-            return false;
-
             RetryCount++;
-            if (RetryCount > 10)
+            if (RetryCount > Constants.RetryLimit)
                 return false;
             return true;
         }
