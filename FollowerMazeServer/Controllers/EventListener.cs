@@ -83,8 +83,15 @@ namespace FollowerMazeServer
                 case PayloadType.Follow:
                     if (Clients.ContainsKey(P.To))
                     {
-                        if (Clients.ContainsKey(P.From))
-                            Clients[P.From].AddFollower(P.To);
+                        // Adds a "dummy" client if it doesn't exist
+                        if (!Clients.ContainsKey(P.From))
+                        {
+                            lock (Clients)
+                            {
+                                Clients[P.From] = new Client(P.From);
+                            }                            
+                        }
+                        Clients[P.From].AddFollower(P.To);
                         Clients[P.To].QueueMessage(P);
                         return true;
                     }

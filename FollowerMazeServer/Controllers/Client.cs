@@ -10,11 +10,11 @@ namespace FollowerMazeServer
     class Client
     {
         private int ClientID;
-        private List<int> Followers;
-        private Queue<Payload> Messages;
+        private List<int> Followers = new List<int>();
+        private Queue<Payload> Messages = null;
 
-        Thread Worker;
-        TcpClient Connection;
+        Thread Worker = null;
+        TcpClient Connection = null;
 
         // Triggered when the client sends its ID
         public event EventHandler<IDEventArgs> OnIDAvailable;
@@ -25,11 +25,18 @@ namespace FollowerMazeServer
         public Client(TcpClient Connection)
         {
             Messages = new Queue<Payload>();
-            Followers = new List<int>();
             Connection.ReceiveTimeout = -1;
             Connection.SendTimeout = -1;
             this.Connection = Connection;
             Worker = new Thread(new ThreadStart(ClientMessageHandling));
+        }
+
+        // "Dummy" client, doesn't connect, only have a list of followers
+        public Client(int ID)
+        {
+            this.ClientID = ID;
+            Worker = new Thread(new ThreadStart(ClientMessageHandling));
+            // TODO Switch from dummy to real client? Better do it with inheritance!
         }
 
         public void Start()
@@ -57,6 +64,9 @@ namespace FollowerMazeServer
 
         public void QueueMessage(Payload Message)
         {
+            // Dummy client
+            if (Messages == null)
+                return;
             lock (Messages)
             {
                 Messages.Enqueue(Message);
@@ -92,6 +102,12 @@ namespace FollowerMazeServer
         private void ClientMessageHandling()
         {
             NetworkStream networkStream;
+            // Dummy client
+            if (Connection == null)
+            {
+                OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
+                return;
+            }
             
             try
             {
