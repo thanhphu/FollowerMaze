@@ -98,7 +98,7 @@ namespace FollowerMazeServer
                     }
                     return true;
                 case PayloadType.Private:
-                    if (Clients.ContainsKey(P.From) && Clients.ContainsKey(P.To))
+                    if (Clients.ContainsKey(P.To))
                     {
                         Clients[P.To].QueueMessage(P);
                         return true;
@@ -111,15 +111,10 @@ namespace FollowerMazeServer
                     if (Clients.ContainsKey(P.From))
                     {
                         List<int> Followers = Clients[P.From].GetCurrentFollowers();
-                        // One of the clients didn't connect yet, wait!
                         foreach (int C in Followers)
                         {
-                            if (!Clients.ContainsKey(C))
-                                return false;
-                        }
-                        foreach (int C in Followers)
-                        {
-                            Clients[C].QueueMessage(P);
+                            if (Clients.ContainsKey(C))
+                                Clients[C].QueueMessage(P);
                         }
                         return true;
                     }
@@ -128,7 +123,7 @@ namespace FollowerMazeServer
                         return false;
                     }
             }
-            return false;
+            return !P.ShouldRetry();
         }
 
         private void EventListenerWorker_DoWork(object sender, DoWorkEventArgs e)
@@ -184,7 +179,7 @@ namespace FollowerMazeServer
                 Payload P = Payload.Create(EventData);
                 if (P == null)
                 {
-                    UnhandledBuffer += "\r\n" + EventData;
+                    UnhandledBuffer = "\r\n" + EventData;
                     continue;
                 }
 

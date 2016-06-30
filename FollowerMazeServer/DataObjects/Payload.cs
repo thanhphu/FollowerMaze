@@ -96,5 +96,15 @@
             // move to client class
             return Raw + "\r\n";
         }
+
+        private int RetryCount = 0;
+
+        public bool ShouldRetry()
+        {
+            RetryCount++;
+            if (RetryCount > 1)
+                return false;
+            return true;
+        }
     }
 }

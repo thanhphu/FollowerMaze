@@ -104,7 +104,7 @@ namespace FollowerMazeServer
                     while (Messages.Count > 0)
                     {
                         Payload Next = Messages.Dequeue();
-                        Utils.Log($"Sending message=${Next} from ClientID={ClientID}");
+                        Utils.Log($"Sending from ClientID={ClientID} message=${Next}");
                         byte[] ToSend = System.Text.Encoding.UTF8.GetBytes(Next.ToString());
                         networkStream.Write(ToSend, 0, ToSend.Length);
                     }
