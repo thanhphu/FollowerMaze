@@ -50,12 +50,12 @@ namespace FollowerMazeServer
                 }
                 foreach (var UnhandledPayload in UnhandledList)
                 {
-                    // TODO Restore after debug
-                    // if (PayloadHandled(UnhandledPayload))
-                    PayloadHandled(UnhandledPayload);
-                    lock (Unhandled)
+                    if (PayloadHandled(UnhandledPayload))
                     {
-                        Unhandled.Remove(UnhandledPayload.ID);
+                        lock (Unhandled)
+                        {
+                            Unhandled.Remove(UnhandledPayload.ID);
+                        }
                     }
                 }
             }
@@ -123,7 +123,7 @@ namespace FollowerMazeServer
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.EventSourcePort);
             Listener.Start();
-            Utils.Log($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
+            Console.WriteLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
             TcpClient Connection = Listener.AcceptTcpClient();
             Utils.Log("Event source connected");
 
@@ -188,7 +188,7 @@ namespace FollowerMazeServer
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.ClientConnectionPort);
             Listener.Start();
-            Utils.Log($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
+            Console.WriteLine($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
             while (!ClientWorker.CancellationPending)
             {
                 TcpClient Connection = Listener.AcceptTcpClient();
@@ -197,13 +197,15 @@ namespace FollowerMazeServer
                 Instance.OnIDAvailable += Instance_IDAvailable;
                 Instance.OnDisconnect += Instance_OnDisconnect;
                 PendingClients.Add(Instance);
+
+                Console.Write($"\rPending clients={PendingClients.Count} Connected={Clients.Count} PendingMessages={Unhandled.Count}   ");
             }
         }
 
         private void Instance_IDAvailable(object sender, IDEventArgs e)
         {
             Client Instance = (Client)sender;
-            lock (this)
+            lock (Clients)
             {
                 Clients[e.ID] = Instance;
                 PendingClients.Remove(Instance);
@@ -212,7 +214,10 @@ namespace FollowerMazeServer
 
         private void Instance_OnDisconnect(object sender, IDEventArgs e)
         {
-            Clients.Remove(e.ID);
+            lock (Clients)
+            {
+                Clients.Remove(e.ID);
+            }
         }
 
         // Implements dispose pattern

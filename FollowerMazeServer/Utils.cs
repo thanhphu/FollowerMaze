@@ -14,7 +14,7 @@ namespace FollowerMazeServer
                 // !Message.Contains("connected") &&
                 !Message.Contains("Buffer"))
             {
-                Console.WriteLine(Message.TrimEnd());
+                // Console.WriteLine(Message.TrimEnd());
             }
 #else
 #endif
