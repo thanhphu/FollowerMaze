@@ -131,7 +131,7 @@ namespace FollowerMazeServer
             byte[] Buffer = new Byte[0];
 
             // Stop when event source disconnects
-            while (Connection.Connected)
+            while (Connection.Connected && !EventListenerWorker.CancellationPending)
             {
                 // Read new data
                 byte[] Incoming = new byte[Constants.BufferSize];
@@ -232,6 +232,10 @@ namespace FollowerMazeServer
 
         public void Stop()
         {
+            EventListenerWorker.CancelAsync();
+            ClientWorker.CancelAsync();
+            EventHandlerWorker.CancelAsync();
+
             // Copy clients list on shutdown to avoid concurrency problems
             foreach (var C in Clients.Values.ToList())
             {
@@ -242,10 +246,6 @@ namespace FollowerMazeServer
             {
                 C.Shutdown();
             }
-
-            EventListenerWorker.CancelAsync();
-            ClientWorker.CancelAsync();
-            EventHandlerWorker.CancelAsync();
         }
     }
 }

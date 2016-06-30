@@ -7,13 +7,13 @@ using System.Threading;
 
 namespace FollowerMazeServer
 {
-    class Client: IDisposable
+    class Client
     {
         private int ClientID;
         private List<int> Followers;
         private Queue<Payload> Messages;
 
-        BackgroundWorker Worker;
+        Thread Worker;
         TcpClient Connection;
 
         // Triggered when the client sends its ID
@@ -29,10 +29,8 @@ namespace FollowerMazeServer
             Connection.ReceiveTimeout = -1;
             Connection.SendTimeout = -1;
             this.Connection = Connection;
-            this.Worker = new BackgroundWorker();
-            this.Worker.WorkerSupportsCancellation = true;
-            this.Worker.DoWork += ClientMessageHandling;
-            this.Worker.RunWorkerAsync();
+            Worker = new Thread(new ThreadStart(ClientMessageHandling));
+            Worker.Start();
         }
 
         public void AddFollower(int Target)
@@ -87,7 +85,7 @@ namespace FollowerMazeServer
             OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
         }
 
-        private void ClientMessageHandling(object sender, DoWorkEventArgs e)
+        private void ClientMessageHandling()
         {
             NetworkStream networkStream;
             
@@ -101,7 +99,7 @@ namespace FollowerMazeServer
                     this.ProcessClientID,
                     networkStream);
 
-                while (!Worker.CancellationPending)
+                while (Worker.ThreadState != ThreadState.AbortRequested)
                 {
                     while (Messages.Count > 0)
                     {
@@ -120,14 +118,9 @@ namespace FollowerMazeServer
 
         public void Shutdown()
         {
-            Worker.CancelAsync();
+            Worker.Abort();
             // Event handler not set in this class, better check if it is properly assigned
             OnDisconnect?.Invoke(this, new IDEventArgs(ClientID));
-        }
-
-        void IDisposable.Dispose()
-        {
-            Worker.Dispose();
         }
     }
 }
