@@ -66,38 +66,37 @@ namespace FollowerMazeServer
             return Followers.ToList();
         }
 
+        // Buffer to read client ID, shared between ProcessClientID and ClientMessageHandling
+        byte[] Incoming = new byte[Constants.BufferSize];
+
+        private void ProcessClientID(IAsyncResult AR)
+        {
+            NetworkStream networkStream = (NetworkStream)AR;
+            int ReadBytes = networkStream.EndRead(AR);
+
+            // Read client ID            
+            string ID = System.Text.Encoding.UTF8.GetString(Incoming, 0, ReadBytes);
+
+            // Invalid client ID? Close this connection
+            if (!int.TryParse(ID, out ClientID))
+            {
+                Shutdown();
+            }
+            Utils.Log($"Received ID from client ID={ClientID}");
+            OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
+        }
 
         private void ClientMessageHandling(object sender, DoWorkEventArgs e)
         {
             do
             {
                 NetworkStream networkStream = Connection.GetStream();
-                while (!Connection.Connected && !Worker.CancellationPending)
-                {
-                    // Wait
-                }
-
-                // Read client ID
-                byte[] Incoming = new byte[Constants.BufferSize];
-                int ReadBytes;
-                try
-                {
-                    ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
-                }
-                catch
-                {
-                    Utils.Log($"Error reading client ID");
-                    break;
-                }
-                string ID = System.Text.Encoding.UTF8.GetString(Incoming, 0, ReadBytes);
-                // Invalid client ID? Close this connection
-                if (!int.TryParse(ID, out ClientID))
-                {
-                    break;
-                }
-                Utils.Log($"Received ID from client ID={ClientID}");
-
-                OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
+                networkStream.BeginRead(
+                    Incoming,
+                    0,
+                    Constants.BufferSize,
+                    this.ProcessClientID,
+                    networkStream);
 
                 while (!Worker.CancellationPending)
                 {                    

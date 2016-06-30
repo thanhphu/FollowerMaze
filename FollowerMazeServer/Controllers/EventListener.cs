@@ -15,15 +15,19 @@ namespace FollowerMazeServer
         private BackgroundWorker ClientWorker = new BackgroundWorker();
 
         // Contains unhandled messages to be sent later
-        private List<Payload> Unhandled;
+        private Dictionary<int, Payload> Unhandled;
         
         // List of clients [client ID, client instance]
         private Dictionary<int, Client> Clients;
 
+        // Clients connected but didn't sent their ID yet
+        private List<Client> PendingClients;
+
         public EventListener()
         {
             Clients = new Dictionary<int, Client>();
-            Unhandled =  new List<Payload>();
+            Unhandled = new Dictionary<int, Payload>();
+            PendingClients = new List<Client>();
 
             EventListenerWorker.WorkerSupportsCancellation = true;
             EventListenerWorker.DoWork += EventListenerWorker_DoWork;            
@@ -39,10 +43,20 @@ namespace FollowerMazeServer
         {
             while (!EventHandlerWorker.CancellationPending)
             {
-                foreach (var UnhandledPayload in Unhandled.ToList())
+                Payload[] UnhandledList;
+                lock (Unhandled)
                 {
-                    if (PayloadHandled(UnhandledPayload))
-                        Unhandled.Remove(UnhandledPayload);
+                    UnhandledList = Unhandled.Values.ToArray();
+                }
+                foreach (var UnhandledPayload in UnhandledList)
+                {
+                    // TODO Restore after debug
+                    // if (PayloadHandled(UnhandledPayload))
+                    PayloadHandled(UnhandledPayload);
+                    lock (Unhandled)
+                    {
+                        Unhandled.Remove(UnhandledPayload.ID);
+                    }
                 }
             }
         }
@@ -142,13 +156,7 @@ namespace FollowerMazeServer
                 Utils.Log(Buffer);
             }
             Connection.Close();
-            // Copy clients list on shutdown to avoid concurrency problems
-            foreach (var C in Clients.Values.ToList())
-            {
-                C.Shutdown();
-            }
-            EventListenerWorker.CancelAsync();
-            ClientWorker.CancelAsync();
+            Stop();
         }
 
         // Tries to extract events and return the remaining buffer 
@@ -156,7 +164,7 @@ namespace FollowerMazeServer
         {
             string Buffer = Encoding.UTF8.GetString(RawBuffer);
             string UnhandledBuffer = "";
-            string[] Events = Buffer.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries);
+            string[] Events = Buffer.Split(new string[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries);
             foreach (string EventData in Events)
             {
                 Utils.Log($"Received event={EventData}");
@@ -170,7 +178,7 @@ namespace FollowerMazeServer
 
                 lock (Unhandled)
                 {
-                    Unhandled.Add(P);
+                    Unhandled.Add(P.ID, P);
                 }
             }
             return Encoding.UTF8.GetBytes(UnhandledBuffer);
@@ -188,6 +196,7 @@ namespace FollowerMazeServer
                 Utils.Log("Client connected");
                 Instance.OnIDAvailable += Instance_IDAvailable;
                 Instance.OnDisconnect += Instance_OnDisconnect;
+                PendingClients.Add(Instance);
             }
         }
 
@@ -197,6 +206,7 @@ namespace FollowerMazeServer
             lock (this)
             {
                 Clients[e.ID] = Instance;
+                PendingClients.Remove(Instance);
             }
         }
 
@@ -222,6 +232,17 @@ namespace FollowerMazeServer
 
         public void Stop()
         {
+            // Copy clients list on shutdown to avoid concurrency problems
+            foreach (var C in Clients.Values.ToList())
+            {
+                C.Shutdown();
+            }
+
+            foreach (var C in PendingClients)
+            {
+                C.Shutdown();
+            }
+
             EventListenerWorker.CancelAsync();
             ClientWorker.CancelAsync();
             EventHandlerWorker.CancelAsync();

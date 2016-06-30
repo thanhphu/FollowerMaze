@@ -7,7 +7,15 @@ namespace FollowerMazeServer
         public static void Log(string Message)
         {
 #if DEBUG
-            Console.WriteLine(Message);
+            if (
+                !Message.Contains("Send") &&
+                !Message.Contains("Received event") &&
+                !Message.Contains("Remaining") &&
+                !Message.Contains("connected") &&
+                !Message.Contains("Buffer"))
+            {
+                Console.WriteLine(Message.TrimEnd());
+            }
 #else
 #endif
         }
@@ -15,7 +23,7 @@ namespace FollowerMazeServer
         public static void Log(byte[] Array)
         {
 #if DEBUG
-            Console.WriteLine(System.Text.Encoding.UTF8.GetString(Array));
+            // Console.WriteLine(System.Text.Encoding.UTF8.GetString(Array));
 #else
 #endif
         }
