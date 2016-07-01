@@ -93,9 +93,9 @@ namespace FollowerMazeServer
                     Clients[P.To].QueueMessage(P);
                     return true;
                 case PayloadType.Unfollow:
-                    if (Clients.ContainsKey(P.From))
+                    if (Clients.ContainsKey(P.To))
                     {
-                        return Clients[P.From].RemoveFollower(P.To);
+                        return Clients[P.To].RemoveFollower(P.From);
                     }
                     break;
                 case PayloadType.Broadcast:
@@ -128,7 +128,7 @@ namespace FollowerMazeServer
             // If all clients connected and the packet is invalid, dispose it
             // If packet has been retried too many times, dispose it
             bool ShouldRetry = !IsAllClientsConnected() && P.ShouldRetry();
-            return !ShouldRetry;
+            return true;
         }
 
         private void EventListenerWorker_DoWork(object sender, DoWorkEventArgs e)
