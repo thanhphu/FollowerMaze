@@ -66,18 +66,15 @@ for them must be silently ignored. *user clients* expect to be notified of
 events **in the correct order**, regardless of the order in which the
 *event source* sent them.
 
-### Assesment Criteria
-We expect you to write **code you would consider production-ready**.
-This means we want your code to be well-factored, without needless
-duplication, follow good practices and be automatically verified.
-
-What we will look at:
-- If your code fulfils the requirement, and runs against the
-supplied example server
-- How clean is your design and implementation, how easy it is to
-understand and maintain your code
-- How you verified your software, if by automated tests or some
-other way
-
 ## The Solution
-Written in C#
+Written in C# using features available in the latest version 6.0. It utilizes BackgroundWorker, Threads and Events to avoid blocking and deliver events as soon as they happen.
+###The EventListener
+###The Client(s)
+###Testing
+###Performance
+###Building
+On Windows with msbuild installed:
+
+>git clone https://github.com/thanhphu/FollowerMaze.git
+>cd FollowerMaze
+>msbuild.exe FollowerMaze.sln /t:Build/p:Configuration=Release;Platform=Win32
