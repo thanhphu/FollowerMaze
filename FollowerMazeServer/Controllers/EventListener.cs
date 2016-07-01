@@ -155,18 +155,20 @@ namespace FollowerMazeServer
                         {
                             continue;
                         }
-                        
-                        // Parse event data
-                        Utils.Log($"Received event={EventData}");
-                        Payload P = Payload.Create(EventData);
-                        if (P == null) continue;
-                        
-                        lock (Unhandled)
+                        if (!string.IsNullOrEmpty(EventData))
                         {
-                            Unhandled[P.ID] = P;
+                            // Parse event data
+                            Utils.Log($"Received event={EventData}");
+                            Payload P = Payload.Create(EventData);
+                            if (P == null) continue;
+
+                            lock (Unhandled)
+                            {
+                                Unhandled[P.ID] = P;
+                            }
+                            if (EventListenerWorker.CancellationPending)
+                                break;
                         }
-                        if (EventListenerWorker.CancellationPending)
-                            break;
                     }
                 }
                 Connection.Close();
