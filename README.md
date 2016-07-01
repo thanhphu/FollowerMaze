@@ -1,5 +1,7 @@
 # Back-end Developer Challenge: Follower Maze
 
+[TOC]
+
 ## The Challenge
 The challenge proposed here is to build a system which acts as a socket
 server, reading events from an *event source* and forwarding them when
@@ -67,13 +69,37 @@ events **in the correct order**, regardless of the order in which the
 *event source* sent them.
 
 ## The Solution
-Written in C# using features available in the latest version 6.0. It utilizes BackgroundWorker, Threads and Events to avoid blocking and deliver events as soon as they happen.
+Written in C# using features available in the latest version (6.0). It utilizes BackgroundWorker, Threads and Events to avoid blocking and deliver events as soon as they happen.
+
+Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md)
 ###The EventListener
+Controller class, manage all listeners that continously run in the thread pool
+####EventDispatchWorker
+Check the event list and queue events sequentially to clients
+####EventListenerWorker
+Listens for events from event source, parse them and add them to the event list
+####ClientHandlingWorker
+Handles connection from client and create client instances for them
 ###The Client(s)
+####DummyClient
+Represents the "clients" in the event stream doesn't actually connects, only referenced. Contains the list of followers and messages intended for them.
+####ConnectedClient
+Represents clients that actually connect to ClientHandlingWorker's listener, can take over data from DummyClient
+####AbstractClient
+Common data shared between Dummy and Connected type
 ###Testing
 ###Performance
+Measured in seconds
+| Run | Events | Time |
+|-|-|-|
+| 1 | 200,000|16|
+| 2 | 200,000|12|
+| 3 | 200,000|17|
+| 4 | 10,000,000|519|
+No timeout encountered, all events are received in the correct order, events are disposed as they are processed to not take up space
+
 ###Building
-On Windows with msbuild installed:
+With msbuild installed:
 
 >git clone https://github.com/thanhphu/FollowerMaze.git
 >cd FollowerMaze
