@@ -160,8 +160,9 @@ namespace FollowerMazeServer
                         {
                             if (EventListenerWorker.CancellationPending)
                                 break;
+                            continue;
                         }
-
+                        
                         // Parse event data
                         Utils.Log($"Received event={EventData}");
                         Payload P = Payload.Create(EventData);

@@ -29,6 +29,9 @@
         /// <returns>instance if data is valid, null otherwise</returns>
         public static Payload Create(string raw)
         {
+            if (raw == null)
+                return null;
+
             Payload Instance = new Payload();
             int Test = -1;
             string[] components = raw.Split('|');
