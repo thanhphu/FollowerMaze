@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace FollowerMazeServer
 {
-    class ConnectedClient: DummyClient
+    class ConnectedClient: AbstractClient
     {
         Thread Worker = null;
         TcpClient Connection = null;
@@ -21,7 +21,7 @@ namespace FollowerMazeServer
             Worker = new Thread(new ThreadStart(ClientMessageHandling));
         }
 
-        public void TakeOverFrom(DummyClient Other)
+        public void TakeOverFrom(AbstractClient Other)
         {
             this.Followers = new List<int>(Other.GetCurrentFollowers());
             this.Messages = new Queue<Payload>(Other.GetMessages());

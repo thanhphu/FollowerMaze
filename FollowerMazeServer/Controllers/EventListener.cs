@@ -227,8 +227,7 @@ namespace FollowerMazeServer
             ConnectedClient Instance = (ConnectedClient)sender;
             if (Clients.ContainsKey(e.ID))
             {
-                var DC = (DummyClient)Clients[e.ID];
-                Instance.TakeOverFrom(DC);
+                Instance.TakeOverFrom(Clients[e.ID]);
             }
             lock (Clients)
             {
