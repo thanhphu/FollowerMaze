@@ -1,7 +1,5 @@
 # Back-end Developer Challenge: Follower Maze
 
-[TOC]
-
 ## The Challenge
 The challenge proposed here is to build a system which acts as a socket
 server, reading events from an *event source* and forwarding them when
@@ -71,7 +69,7 @@ events **in the correct order**, regardless of the order in which the
 ## The Solution
 Written in C# using features available in the latest version (6.0). It utilizes BackgroundWorker, Threads and Events to avoid blocking and deliver events as soon as they happen.
 
-Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md)
+Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md). Code style has been checked with Visual Studio's built-in code analysis tool
 ###The EventListener
 Controller class, manage all listeners that continously run in the thread pool
 ####EventDispatchWorker
@@ -91,16 +89,18 @@ Common data shared between Dummy and Connected type
 ###Performance
 Measured in seconds
 | Run | Events | Time |
-|-|-|-|
-| 1 | 200,000|16|
-| 2 | 200,000|12|
-| 3 | 200,000|17|
-| 4 | 10,000,000|519|
+|:----|-------:|-----:|
+| 1   | 200,000|16|
+| 2   | 200,000|12|
+| 3   | 200,000|17|
+| 4   | 10,000,000|519|
 No timeout encountered, all events are received in the correct order, events are disposed as they are processed to not take up space
 
 ###Building
 With msbuild installed:
 
 >git clone https://github.com/thanhphu/FollowerMaze.git
+>
 >cd FollowerMaze
->msbuild.exe FollowerMaze.sln /t:Build/p:Configuration=Release;Platform=Win32
+>
+>msbuild.exe FollowerMaze.sln /t:Build/p:Configuration=Release;Platform=anycpu
