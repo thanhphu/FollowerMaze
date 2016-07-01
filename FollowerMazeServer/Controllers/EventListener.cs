@@ -1,5 +1,6 @@
 ﻿using FollowerMazeServer.Controllers;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -25,10 +26,10 @@ namespace FollowerMazeServer
         private System.Timers.Timer StatusTimer = new System.Timers.Timer(Constants.StatusInterval);
 
         // Contains unhandled messages to be sent later
-        private Dictionary<int, Payload> Unhandled = new Dictionary<int, Payload>();
+        private ConcurrentDictionary<int, Payload> Unhandled = new ConcurrentDictionary<int, Payload>();
 
         // List of clients [client ID, client instance]
-        private Dictionary<int, AbstractClient> Clients = new Dictionary<int, AbstractClient>();
+        private ConcurrentDictionary<int, AbstractClient> Clients = new ConcurrentDictionary<int, AbstractClient>();
 
         // Clients connected but didn't sent their ID yet
         private List<ConnectedClient> PendingClients = new List<ConnectedClient>();
@@ -68,10 +69,10 @@ namespace FollowerMazeServer
                     if (ProcessedCount - Start > Constants.ProcessedEventLimit)
                         break;
                 }
-                lock (Unhandled)
+                Payload R;
+                for (int i = Start; i < ProcessedCount; i++)
                 {
-                    for (int i = Start; i < ProcessedCount; i++)
-                        Unhandled.Remove(i);
+                    Unhandled.TryRemove(i, out R);
                 }
             }
             Utils.StatusLine("EventHandlerWorker stopped");
@@ -82,10 +83,7 @@ namespace FollowerMazeServer
             // Adds a "dummy" client if it doesn't exist
             if (!Clients.ContainsKey(ID))
             {
-                lock (Clients)
-                {
-                    Clients[ID] = new DummyClient(ID);
-                }
+                Clients[ID] = new DummyClient(ID);
             }
         }
 
@@ -183,11 +181,9 @@ namespace FollowerMazeServer
 
         private void AddToUnhandled(List<Payload> ToAdd)
         {
-            lock (Unhandled)
-            {
-                foreach (Payload iP in ToAdd)
-                    Unhandled[iP.ID] = iP;
-            }
+            foreach (Payload iP in ToAdd)
+                Unhandled[iP.ID] = iP;
+
             ToAdd.Clear();
         }
         #endregion
@@ -219,19 +215,14 @@ namespace FollowerMazeServer
             {
                 Instance.TakeOverFrom(Clients[e.ID]);
             }
-            lock (Clients)
-            {
-                Clients[e.ID] = Instance;
-            }
+            Clients[e.ID] = Instance;
             PendingClients.Remove(Instance);
         }
 
         private void Instance_OnDisconnect(object sender, IDEventArgs e)
         {
-            lock (Clients)
-            {
-                Clients.Remove(e.ID);
-            }
+            AbstractClient R;
+            Clients.TryRemove(e.ID, out R);
         }
         #endregion
 

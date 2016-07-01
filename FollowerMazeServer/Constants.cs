@@ -4,7 +4,7 @@ namespace FollowerMazeServer
 {
     public static class Constants
     {
-        public static readonly int StatusInterval = 1000; // in ms
+        public static readonly int StatusInterval = 500; // in ms
         public static readonly int BufferSize = 1024; // in bytes
         // Time between each iteration inside client's thread. Messages will only be sent out once during this perioud
         public static readonly int WorkerDelay = 100; // in ms. 
