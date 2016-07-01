@@ -68,20 +68,11 @@ namespace FollowerMazeServer
             Utils.StatusLine("EventHandlerWorker stopped");
         }
 
-
-        private bool IsAllClientsConnected()
-        {
-            return (Clients.Count > 0) && (PendingClients.Count == 0);
-        }
-
         private bool CheckAndCreateDummyClient(int ID)
         {
             // Adds a "dummy" client if it doesn't exist
             if (!Clients.ContainsKey(ID))
             {
-                // Wait for all clients to connect before creating a dummy client
-                if (!IsAllClientsConnected())
-                    return false;
                 lock (Clients)
                 {
                     Clients[ID] = new DummyClient(ID);
