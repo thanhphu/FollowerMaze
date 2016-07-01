@@ -1,7 +1,7 @@
 # Back-end Developer Challenge: Follower Maze
 
 ## The Solution
-Written in C# using features available in the latest version (6.0). It utilizes BackgroundWorker (and Dispose pattern), Threads and EventHandler pattern to avoid blocking and deliver events as soon as they happen.
+Written in C# using features available in the latest version (6.0). It utilizes asynchronous processing using BackgroundWorker (plus Dispose pattern), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen.
 
 Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md). Code style has been checked with Visual Studio's built-in code analysis tool
 ###The EventListener
@@ -30,7 +30,7 @@ Measured in seconds
 | 3   | 200,000    | 17   |
 | 4   | 10,000,000 | 519  |
 
-No timeout encountered, all events are received in the correct order, events are disposed as they are processed to not take up space
+No timeout encountered, all events are received in the correct order, events are disposed as they are processed to not take up space.
 
 ###Building
 With msbuild installed:
