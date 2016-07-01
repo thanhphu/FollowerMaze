@@ -27,7 +27,7 @@ namespace FollowerMazeServer
         {
             Messages = new Queue<Payload>();
             Connection.ReceiveTimeout = -1;
-            Connection.SendTimeout = -1;            
+            Connection.SendTimeout = -1;
             this.Connection = Connection;
             Worker = new Thread(new ThreadStart(ClientMessageHandling));
         }
@@ -41,7 +41,7 @@ namespace FollowerMazeServer
         }
 
         public void Start()
-        {            
+        {
             Worker.Start();
         }
 
@@ -114,7 +114,7 @@ namespace FollowerMazeServer
                 OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
                 return;
             }
-            
+
             try
             {
                 networkStream = Connection.GetStream();
@@ -136,8 +136,10 @@ namespace FollowerMazeServer
                     }
                     Thread.Sleep(Constants.WorkerDelay);
                 }
-            } catch {
-                Utils.Log("Client shutdown!");                
+            }
+            catch
+            {
+                Utils.Log("Client shutdown!");
             }
             Stop();
         }

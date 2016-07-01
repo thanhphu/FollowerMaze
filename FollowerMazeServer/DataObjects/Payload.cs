@@ -19,7 +19,7 @@
 
         // Error may happen during initialization, so it's best to use factory pattern
         private Payload()
-        {            
+        {
         }
 
         /// <summary>
@@ -36,7 +36,8 @@
             if (int.TryParse(components[0], out Test))
             {
                 Instance.ID = Test;
-            } else
+            }
+            else
             {
                 return null;
             }

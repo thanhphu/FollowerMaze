@@ -7,23 +7,23 @@ using System.Text;
 
 namespace FollowerMazeServer
 {
-    class EventListener: IDisposable
-    {   
+    class EventListener : IDisposable
+    {
         private BackgroundWorker EventListenerWorker = new BackgroundWorker();
         private BackgroundWorker EventHandlerWorker = new BackgroundWorker();
         private BackgroundWorker ClientWorker = new BackgroundWorker();
 
         // Contains unhandled messages to be sent later
         private SortedList<int, Payload> Unhandled;
-        
+
         // List of clients [client ID, client instance]
         private Dictionary<int, Client> Clients;
 
         // Clients connected but didn't sent their ID yet
         private List<Client> PendingClients;
-              
+
         // Index of current message
-        private int ProcessedCount = 1;        
+        private int ProcessedCount = 1;
 
         public EventListener()
         {
@@ -32,7 +32,7 @@ namespace FollowerMazeServer
             PendingClients = new List<Client>();
 
             EventListenerWorker.WorkerSupportsCancellation = true;
-            EventListenerWorker.DoWork += EventListenerWorker_DoWork;            
+            EventListenerWorker.DoWork += EventListenerWorker_DoWork;
 
             ClientWorker.WorkerSupportsCancellation = true;
             ClientWorker.DoWork += ClientWorker_DoWork;
@@ -51,12 +51,11 @@ namespace FollowerMazeServer
                     var Next = UnhandledList[i];
                     if (Next.ID == ProcessedCount && PayloadHandled(Next))
                     {
-                            ProcessedCount++;
+                        ProcessedCount++;
                         continue;
-                        
                     }
                     // Wait for the correct message to come or the client to connect
-                    break;                    
+                    break;
                 }
                 lock (Unhandled)
                 {
@@ -116,7 +115,7 @@ namespace FollowerMazeServer
                     }
                     return true;
                 case PayloadType.Private:
-                    if(!CheckAndCreateDummyClient(P.To))
+                    if (!CheckAndCreateDummyClient(P.To))
                         return false;
                     Clients[P.To].QueueMessage(P);
                     return true;
@@ -139,7 +138,7 @@ namespace FollowerMazeServer
         private void EventListenerWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.EventSourcePort);
-            Listener.Start();           
+            Listener.Start();
 
             while (!EventListenerWorker.CancellationPending)
             {
@@ -194,15 +193,15 @@ namespace FollowerMazeServer
 
                 Payload P = Payload.Create(EventData);
                 if (P == null) continue;
-                
+
                 lock (Unhandled)
                 {
                     Unhandled[P.ID] = P;
                 }
-            }            
+            }
             return Encoding.UTF8.GetBytes(Buffer);
         }
-        
+
         private void ClientWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.ClientConnectionPort);
@@ -235,13 +234,13 @@ namespace FollowerMazeServer
         {
             Client Instance = (Client)sender;
             if (Clients.ContainsKey(e.ID))
-            {                
+            {
                 Clients[e.ID].HandOverTo(Instance);
-            }            
+            }
             lock (Clients)
             {
-                Clients[e.ID] = Instance;                    
-            }            
+                Clients[e.ID] = Instance;
+            }
             PendingClients.Remove(Instance);
         }
 
@@ -268,7 +267,7 @@ namespace FollowerMazeServer
             ClientWorker.RunWorkerAsync();
             EventHandlerWorker.RunWorkerAsync();
         }
-        
+
         public void Stop()
         {
             Utils.Log("Event listener stopping...");

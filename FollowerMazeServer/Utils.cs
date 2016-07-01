@@ -18,7 +18,7 @@ namespace FollowerMazeServer
                 System.IO.File.Delete(Path);
             }
             lock (Buffer)
-            { 
+            {
                 Buffer.Add(Message.TrimEnd());
                 if (Buffer.Count > 1000)
                 {
