@@ -21,6 +21,9 @@ namespace FollowerMazeServer
         // Handle connections from client
         private BackgroundWorker ClientHandlingWorker = new BackgroundWorker();
 
+        // Write status update on screen
+        private System.Timers.Timer StatusTimer = new System.Timers.Timer(Constants.StatusInterval);
+
         // Contains unhandled messages to be sent later
         private Dictionary<int, Payload> Unhandled = new Dictionary<int, Payload>();
 
@@ -44,6 +47,8 @@ namespace FollowerMazeServer
 
             EventDispatchWorker.WorkerSupportsCancellation = true;
             EventDispatchWorker.DoWork += EventDispatchWorker_DoWork;
+
+            StatusTimer.Elapsed += StatusTimer_Elapsed;
         }
 
         #region EventDispatchWorker
@@ -67,7 +72,6 @@ namespace FollowerMazeServer
                     for (int i = Start; i < ProcessedCount; i++)
                         Unhandled.Remove(i);
                 }
-                UpdateStatus();
             }
             Utils.StatusLine("EventHandlerWorker stopped");
         }
@@ -141,7 +145,6 @@ namespace FollowerMazeServer
                 TcpClient Connection = Listener.AcceptTcpClient();
                 Utils.Log("Event source connected");
 
-                // System.Threading.Thread.Sleep(1000);
                 using (StreamReader Reader = new StreamReader(Connection.GetStream(), Encoding.UTF8))
                 {
                     List<Payload> ToAdd = new List<Payload>();
@@ -157,6 +160,8 @@ namespace FollowerMazeServer
                             Utils.StatusLine($"Exception {E.Message}");
                             // Ignore IO errors
                         }
+
+                        // Parse event data
                         Utils.Log($"Received event={EventData}");
                         Payload P = Payload.Create(EventData);
                         if (P == null) continue;
@@ -200,7 +205,6 @@ namespace FollowerMazeServer
                 PendingClients.Add(Instance);
 
                 Instance.Start();
-                UpdateStatus();
             }
             Utils.StatusLine("ClientWorker stopped");
         }
@@ -229,9 +233,9 @@ namespace FollowerMazeServer
         #endregion
 
         #region Pattern
-        private void UpdateStatus()
+        private void StatusTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if (ProcessedCount == 0)
+            if (ProcessedCount <= 1)
                 return;
             Utils.Status($"Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
                     $"Messages: Pending={Unhandled.Count} Processed={ProcessedCount - 1}");
