@@ -38,16 +38,15 @@ No timeout encountered, all events are received in the correct order, events are
 
 ###Building
 
->git clone https://github.com/thanhphu/FollowerMaze.git
+>`git clone https://github.com/thanhphu/FollowerMaze.git`
 >
->cd FollowerMaze
->
+>`cd FollowerMaze`
 
 Windows with msbuild
->msbuild.exe FollowerMaze.sln /t:Build /p:Configuration=Release
+>`msbuild.exe FollowerMaze.sln /t:Build /p:Configuration=Release`
 
 Linux with mono and xbuild
->xbuild /p:Configuration=Release FollowerMaze.sln
+>`xbuild /p:Configuration=Release FollowerMaze.sln`
 
 ## The Challenge
 The challenge proposed here is to build a system which acts as a socket
