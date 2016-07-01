@@ -37,5 +37,15 @@ namespace FollowerMazeServer
 #else
 #endif
         }
+
+        public static void Status(string Message)
+        {
+            Console.Write("\r" + Message.PadRight(100));
+        }
+
+        public static void StatusLine(string Message)
+        {
+            Console.WriteLine("\r" +(Message).PadRight(100));
+        }
     }
 }

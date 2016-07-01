@@ -67,6 +67,7 @@ namespace FollowerMazeServer
                 }
                 UpdateStatus();
             }
+            Utils.StatusLine("EventHandlerWorker stopped");
         }
 
         private bool IsAllClientsConnected()
@@ -135,7 +136,7 @@ namespace FollowerMazeServer
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.EventSourcePort);
             Listener.Start();
-            Console.WriteLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
+            Utils.StatusLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
             TcpClient Connection = Listener.AcceptTcpClient();
             Utils.Log("Event source connected");
 
@@ -171,7 +172,8 @@ namespace FollowerMazeServer
                 Utils.Log(Buffer);
             }
             Connection.Close();
-            Stop();
+            Utils.StatusLine("Event source stopped");
+            // Stop();
         }
 
         // Tries to extract events and return the remaining buffer 
@@ -204,7 +206,7 @@ namespace FollowerMazeServer
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.ClientConnectionPort);
             Listener.Start();
-            Console.WriteLine($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
+            Utils.StatusLine($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
             while (!ClientWorker.CancellationPending)
             {
                 TcpClient Connection = Listener.AcceptTcpClient();
@@ -217,13 +219,14 @@ namespace FollowerMazeServer
                 Instance.Start();
                 UpdateStatus();
             }
+            Utils.StatusLine("ClientWorker stopped");
         }
 
         private void UpdateStatus()
         {
             if (ProcessedCount == 0)
                 return;
-            Console.Write($"\r{DateTime.Now.ToLongTimeString()} Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
+            Utils.Status($"{DateTime.Now.ToLongTimeString()} Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
                     $"Messages: Pending={Unhandled.Count} Processed={ProcessedCount}  ");
         }
 
@@ -255,12 +258,15 @@ namespace FollowerMazeServer
 
         public void Start()
         {
+            Utils.Log("Event listener starting...");
             EventListenerWorker.RunWorkerAsync();
             ClientWorker.RunWorkerAsync();
 
             GraceTimer = new Timer();
             GraceTimer.Interval = Constants.GracePeriod;
-            GraceTimer.Elapsed += GraceTimer_Elapsed;            
+            GraceTimer.Elapsed += GraceTimer_Elapsed;
+
+            UpdateStatus();
         }
 
         private void GraceTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -271,6 +277,7 @@ namespace FollowerMazeServer
 
         public void Stop()
         {
+            Utils.Log("Event listener stopping...");
             EventListenerWorker.CancelAsync();
             ClientWorker.CancelAsync();
             EventHandlerWorker.CancelAsync();
