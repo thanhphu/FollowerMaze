@@ -154,6 +154,8 @@ namespace FollowerMazeServer
                     int ReadBytes;
                     try
                     {
+                        // For some reason, StreamReader has a HUGE performance impact, reading the data
+                        // manually is a bit complicated, but it works
                         ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
                     }
                     catch
