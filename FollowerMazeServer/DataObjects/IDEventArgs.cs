@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace FollowerMazeServer
 {
+    /// <summary>
+    /// Data class used in events to pass client ID around
+    /// </summary>
     class IDEventArgs : EventArgs
     {
         public int ID { get; private set; }

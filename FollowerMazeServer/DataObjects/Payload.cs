@@ -9,6 +9,9 @@
         Status
     }
 
+    /// <summary>
+    /// Represent a parsed event sent from event source, support parsing via factory method Payload.Create
+    /// </summary>
     class Payload
     {
         public int ID { get; private set; }
@@ -17,13 +20,15 @@
         public int To { get; private set; }
         public string Raw { get; private set; }
 
-        // Error may happen during initialization, so it's best to use factory pattern
+        /// <summary>
+        /// Hidden constructor. Error may happen during initialization, so it's best to use factory pattern
+        /// </summary>
         private Payload()
         {
         }
 
         /// <summary>
-        /// Create a payload instance from raw data
+        /// Factory method to create a payload instance from event's string representation
         /// </summary>
         /// <param name="raw">raw payload data</param>
         /// <returns>instance if data is valid, null otherwise</returns>
@@ -94,6 +99,10 @@
             return Instance;
         }
 
+        /// <summary>
+        /// Returns the original string unmodified to client
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             // Append back the line break cut from the protocol
