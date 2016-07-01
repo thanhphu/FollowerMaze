@@ -264,6 +264,7 @@ namespace FollowerMazeServer
             EventListenerWorker.Dispose();
             ClientHandlingWorker.Dispose();
             EventDispatchWorker.Dispose();
+            StatusTimer.Dispose();
         }
         #endregion
 

@@ -1,13 +1,12 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using FollowerMazeServer;
 
 namespace FollowerMazeTest
 {
-    [TestClass]
+    [TestFixture]
     public class PayloadTest
     {
-        [TestMethod]
+        [Test]
         public void NormalCase()
         {
             var ToParse = "196296|U|270|927";
@@ -19,7 +18,7 @@ namespace FollowerMazeTest
             Assert.AreEqual(P.ToString(), ToParse + "\r\n");
         }
 
-        [TestMethod]
+        [Test]
         public void FailCase()
         {
             var ToParse = "196296|";
@@ -27,7 +26,7 @@ namespace FollowerMazeTest
             Assert.IsNull(P);
         }
 
-        [TestMethod]
+        [Test]
         public void FailPayloadType1()
         {
             var ToParse = "196296|X|270|927";
@@ -35,7 +34,7 @@ namespace FollowerMazeTest
             Assert.IsNull(P);
         }
 
-        [TestMethod]
+        [Test]
         public void FailPayloadType2()
         {
             // If we just check the first character, it may be null
@@ -44,7 +43,7 @@ namespace FollowerMazeTest
             Assert.IsNull(P);
         }
 
-        [TestMethod]
+        [Test]
         public void FailID()
         {
             var ToParse = "ABC|U|270|927";
@@ -52,7 +51,7 @@ namespace FollowerMazeTest
             Assert.IsNull(P);
         }
 
-        [TestMethod]
+        [Test]
         public void FailTo()
         {
             var ToParse = "123|U|A|927";
@@ -60,7 +59,7 @@ namespace FollowerMazeTest
             Assert.IsNull(P);
         }
 
-        [TestMethod]
+        [Test]
         public void FailFrom()
         {
             var ToParse = "ABC|U|270|B";
@@ -68,7 +67,7 @@ namespace FollowerMazeTest
             Assert.IsNull(P);
         }
 
-        [TestMethod]
+        [Test]
         public void PassBroadcast()
         {
             var ToParse = "123|B";
@@ -76,7 +75,7 @@ namespace FollowerMazeTest
             Assert.IsNotNull(P);
         }
 
-        [TestMethod]
+        [Test]
         public void FailStatus()
         {
             var ToParse = "123|S";
@@ -84,7 +83,7 @@ namespace FollowerMazeTest
             Assert.IsNull(P);
         }
 
-        [TestMethod]
+        [Test]
         public void PassStatus()
         {
             var ToParse = "123|S|456";
@@ -92,7 +91,7 @@ namespace FollowerMazeTest
             Assert.IsNotNull(P);
         }
 
-        [TestMethod]
+        [Test]
         public void FailFollow()
         {
             var ToParse = "123|F|456";
@@ -100,7 +99,7 @@ namespace FollowerMazeTest
             Assert.IsNull(P);
         }
 
-        [TestMethod]
+        [Test]
         public void PassFollow()
         {
             var ToParse = "123|F|456|789";
