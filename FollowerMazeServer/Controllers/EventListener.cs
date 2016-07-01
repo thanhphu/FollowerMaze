@@ -21,13 +21,13 @@ namespace FollowerMazeServer
         private BackgroundWorker ClientHandlingWorker = new BackgroundWorker();
 
         // Contains unhandled messages to be sent later
-        private SortedList<int, Payload> Unhandled;
+        private SortedList<int, Payload> Unhandled = new SortedList<int, Payload>();
 
         // List of clients [client ID, client instance]
-        private Dictionary<int, AbstractClient> Clients;
+        private Dictionary<int, AbstractClient> Clients = new Dictionary<int, AbstractClient>();
 
         // Clients connected but didn't sent their ID yet
-        private List<ConnectedClient> PendingClients;
+        private List<ConnectedClient> PendingClients = new List<ConnectedClient>();
 
         // ID of the next message
         private int ProcessedCount = 1; 
@@ -35,10 +35,6 @@ namespace FollowerMazeServer
 
         public EventListener()
         {
-            Clients = new Dictionary<int, AbstractClient>();
-            Unhandled = new SortedList<int, Payload>();
-            PendingClients = new List<ConnectedClient>();
-
             EventListenerWorker.WorkerSupportsCancellation = true;
             EventListenerWorker.DoWork += EventListenerWorker_DoWork;
 
