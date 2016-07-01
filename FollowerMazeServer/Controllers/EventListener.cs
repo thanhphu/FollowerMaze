@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FollowerMazeServer.Controllers;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -17,19 +18,19 @@ namespace FollowerMazeServer
         private SortedList<int, Payload> Unhandled;
 
         // List of clients [client ID, client instance]
-        private Dictionary<int, Client> Clients;
+        private Dictionary<int, AbstractClient> Clients;
 
         // Clients connected but didn't sent their ID yet
-        private List<Client> PendingClients;
+        private List<ConnectedClient> PendingClients;
 
         // Index of current message
         private int ProcessedCount = 1;
 
         public EventListener()
         {
-            Clients = new Dictionary<int, Client>();
+            Clients = new Dictionary<int, AbstractClient>();
             Unhandled = new SortedList<int, Payload>();
-            PendingClients = new List<Client>();
+            PendingClients = new List<ConnectedClient>();
 
             EventListenerWorker.WorkerSupportsCancellation = true;
             EventListenerWorker.DoWork += EventListenerWorker_DoWork;
@@ -83,7 +84,7 @@ namespace FollowerMazeServer
                     return false;
                 lock (Clients)
                 {
-                    Clients[ID] = new Client(ID);
+                    Clients[ID] = new DummyClient(ID);
                 }
             }
             return true;
@@ -210,7 +211,7 @@ namespace FollowerMazeServer
             while (!ClientWorker.CancellationPending)
             {
                 TcpClient Connection = Listener.AcceptTcpClient();
-                Client Instance = new Client(Connection);
+                ConnectedClient Instance = new ConnectedClient(Connection);
                 Utils.Log("Client connected");
                 Instance.OnIDAvailable += Instance_IDAvailable;
                 Instance.OnDisconnect += Instance_OnDisconnect;
@@ -232,10 +233,11 @@ namespace FollowerMazeServer
 
         private void Instance_IDAvailable(object sender, IDEventArgs e)
         {
-            Client Instance = (Client)sender;
+            ConnectedClient Instance = (ConnectedClient)sender;
             if (Clients.ContainsKey(e.ID))
             {
-                Clients[e.ID].HandOverTo(Instance);
+                var DC = (DummyClient)Clients[e.ID];
+                Instance.TakeOverFrom(DC);
             }
             lock (Clients)
             {

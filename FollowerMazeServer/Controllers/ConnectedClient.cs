@@ -1,29 +1,18 @@
-﻿using System;
+﻿using FollowerMazeServer.Controllers;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 
 namespace FollowerMazeServer
 {
-    class Client
+    class ConnectedClient: DummyClient
     {
-        private int ClientID;
-        private List<int> Followers = new List<int>();
-        private Queue<Payload> Messages = new Queue<Payload>();
-
         Thread Worker = null;
         TcpClient Connection = null;
 
-        // Triggered when the client sends its ID
-        public event EventHandler<IDEventArgs> OnIDAvailable;
-
-        // Triggered when the client disconnects
-        public event EventHandler<IDEventArgs> OnDisconnect;
-
-        // TODO refactor this and HandOverTo
-        public Client(TcpClient Connection)
+        public ConnectedClient(TcpClient Connection)
         {
             Messages = new Queue<Payload>();
             Connection.ReceiveTimeout = -1;
@@ -32,57 +21,10 @@ namespace FollowerMazeServer
             Worker = new Thread(new ThreadStart(ClientMessageHandling));
         }
 
-        // "Dummy" client, doesn't connect, only have a list of followers
-        public Client(int ID)
+        public void TakeOverFrom(DummyClient Other)
         {
-            this.ClientID = ID;
-            Worker = new Thread(new ThreadStart(ClientMessageHandling));
-            // TODO Switch from dummy to real client? Better do it with inheritance!
-        }
-
-        public void Start()
-        {
-            Worker.Start();
-        }
-
-        public void HandOverTo(Client Other)
-        {
-            Other.Followers = new List<int>(this.Followers);
-            Other.Messages = new Queue<Payload>(this.Messages);
-        }
-
-        public void AddFollower(int Target)
-        {
-            lock (Followers)
-            {
-                Followers.Add(Target);
-            }
-        }
-
-        public bool RemoveFollower(int Target)
-        {
-            bool Result = false;
-            lock (Followers)
-            {
-                Result = Followers.Remove(Target);
-            }
-            return Result;
-        }
-
-        public void QueueMessage(Payload Message)
-        {
-            if (Messages.Count > 100 && Connection == null)
-                Messages.Clear();
-            lock (Messages)
-            {
-                Messages.Enqueue(Message);
-            }
-        }
-
-        public List<int> GetCurrentFollowers()
-        {
-            // Returns a copy
-            return Followers.ToList();
+            this.Followers = new List<int>(Other.GetCurrentFollowers());
+            this.Messages = new Queue<Payload>(Other.GetMessages());
         }
 
         // Buffer to read client ID, shared between ProcessClientID and ClientMessageHandling
@@ -102,19 +44,12 @@ namespace FollowerMazeServer
                 Stop();
             }
             Utils.Log($"Received ID from client ID={ClientID}");
-            OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
+            InvokeIDEvent();
         }
 
         private void ClientMessageHandling()
         {
             NetworkStream networkStream;
-            // Dummy client
-            if (Connection == null)
-            {
-                OnIDAvailable?.Invoke(this, new IDEventArgs(ClientID));
-                return;
-            }
-
             try
             {
                 networkStream = Connection.GetStream();
@@ -144,11 +79,15 @@ namespace FollowerMazeServer
             Stop();
         }
 
-        public void Stop()
+        public override void Start()
+        {
+            Worker.Start();
+        }
+
+        public override void Stop()
         {
             Worker.Abort();
-            // Event handler not set in this class, better check if it is properly assigned
-            OnDisconnect?.Invoke(this, new IDEventArgs(ClientID));
+            base.Stop();
         }
     }
 }

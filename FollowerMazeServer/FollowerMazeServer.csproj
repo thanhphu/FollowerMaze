@@ -43,8 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\Client.cs" />
+    <Compile Include="Controllers\AbstractClient.cs" />
+    <Compile Include="Controllers\ConnectedClient.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Controllers\DummyClient.cs" />
     <Compile Include="Controllers\EventListener.cs" />
     <Compile Include="DataObjects\IDEventArgs.cs" />
     <Compile Include="DataObjects\Payload.cs" />
