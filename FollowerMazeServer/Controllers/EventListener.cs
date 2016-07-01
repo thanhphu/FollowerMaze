@@ -9,6 +9,9 @@ using System.Text;
 
 namespace FollowerMazeServer
 {
+    /// <summary>
+    /// Controller class, manage all listeners
+    /// </summary>
     class EventListener : IDisposable
     {
         #region Data
@@ -71,6 +74,10 @@ namespace FollowerMazeServer
             Utils.StatusLine("EventHandlerWorker stopped");
         }
 
+        /// <summary>
+        /// Checks if a client already exists, if not, create a dummy client
+        /// </summary>
+        /// <param name="ID">ID of client to create</param>
         private void CheckAndCreateDummyClient(int ID)
         {
             // Adds a "dummy" client if it doesn't exist
@@ -83,7 +90,11 @@ namespace FollowerMazeServer
             }
         }
 
-        // Handle a payload, returns true if it can be processed now, false otherwise
+        /// <summary>
+        /// Handle a payload, returns true if it can be processed now, false otherwise
+        /// </summary>
+        /// <param name="P">payload to handle</param>
+        /// <returns>true if payload has been handled, false if retry is needed</returns>
         private bool IsPayloadHandled(Payload P)
         {
             Utils.Log($"Sending event {P.ToString()}");
@@ -198,6 +209,11 @@ namespace FollowerMazeServer
             Utils.StatusLine("ClientWorker stopped");
         }
 
+        /// <summary>
+        /// Called when a connected client sends it ID
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Instance_IDAvailable(object sender, IDEventArgs e)
         {
             ConnectedClient Instance = (ConnectedClient)sender;
@@ -212,6 +228,11 @@ namespace FollowerMazeServer
             PendingClients.Remove(Instance);
         }
 
+        /// <summary>
+        /// Called when a connected client disconnects
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Instance_OnDisconnect(object sender, IDEventArgs e)
         {
             lock (Clients)
@@ -222,6 +243,11 @@ namespace FollowerMazeServer
         #endregion
 
         #region Pattern
+        /// <summary>
+        /// Update status on screen
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void StatusTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             if (ProcessedCount <= 1)
@@ -230,7 +256,9 @@ namespace FollowerMazeServer
                     $"Messages: Pending={Unhandled.Count} Processed={ProcessedCount - 1}");
         }
 
-        // Implements dispose pattern
+        /// <summary>
+        /// Implements dispose pattern for the worker objects
+        /// </summary>
         public void Dispose()
         {
             EventListenerWorker.Dispose();

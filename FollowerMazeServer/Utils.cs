@@ -3,12 +3,19 @@ using System.Collections.Generic;
 
 namespace FollowerMazeServer
 {
+    /// <summary>
+    ///  Utility methods
+    /// </summary>
     class Utils
     {
         static List<string> Buffer = new List<string>();
         const string Path = "E:\\Log.txt";
         static bool First = true;
 
+        /// <summary>
+        /// Write log to file, with buffer
+        /// </summary>
+        /// <param name="Message">string to write</param>
         public static void Log(string Message)
         {
 #if DEBUG
@@ -30,6 +37,10 @@ namespace FollowerMazeServer
 #endif
         }
 
+        /// <summary>
+        /// Write log to file
+        /// </summary>
+        /// <param name="Array">array to write</param>
         public static void Log(byte[] Array)
         {
 #if DEBUG
@@ -38,6 +49,10 @@ namespace FollowerMazeServer
 #endif
         }
 
+        /// <summary>
+        /// Write a status message on screen, can be updated inline
+        /// </summary>
+        /// <param name="Message"></param>
         public static void Status(string Message)
         {
             Console.Write("\r" + DateTime.Now.ToLongTimeString() + " " + Message.PadRight(100));

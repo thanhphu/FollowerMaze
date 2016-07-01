@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace FollowerMazeServer.Controllers
 {
+    /// <summary>
+    /// Common method and data shared between dummy and connnected client
+    /// </summary>
     abstract class AbstractClient
     {
         #region Data

@@ -6,6 +6,9 @@ using System.Threading;
 
 namespace FollowerMazeServer
 {
+    /// <summary>
+    /// Repersents a client that actually connect to the server, as opposed to a dummy client
+    /// </summary>
     class ConnectedClient: AbstractClient
     {
         Thread Worker = null;
@@ -20,6 +23,11 @@ namespace FollowerMazeServer
             Worker = new Thread(new ThreadStart(ClientMessageHandling));
         }
 
+        /// <summary>
+        /// Take data from another client, the other client should be discarded shortly after so this
+        /// instance can take oker
+        /// </summary>
+        /// <param name="Other">Client to take followers and messages from</param>
         public void TakeOverFrom(AbstractClient Other)
         {
             this.Followers = new List<int>(Other.GetCurrentFollowers());
@@ -29,6 +37,10 @@ namespace FollowerMazeServer
         // Buffer to read client ID, shared between ProcessClientID and ClientMessageHandling
         byte[] Incoming = new byte[Constants.BufferSize];
 
+        /// <summary>
+        /// Asynchronous method called when a client return its ID
+        /// </summary>
+        /// <param name="AR"></param>
         private void ProcessClientID(IAsyncResult AR)
         {
             NetworkStream networkStream = (NetworkStream)AR.AsyncState;
@@ -46,6 +58,10 @@ namespace FollowerMazeServer
             InvokeIDEvent();
         }
 
+        /// <summary>
+        /// Handle messages to and from clients, started in a thread and keep looping until shutdown
+        /// or client disconnects
+        /// </summary>
         private void ClientMessageHandling()
         {
             NetworkStream networkStream;
