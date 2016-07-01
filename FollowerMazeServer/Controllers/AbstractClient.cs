@@ -38,20 +38,12 @@ namespace FollowerMazeServer.Controllers
         #region Follower handling
         public void AddFollower(int Target)
         {
-            lock (Followers)
-            {
-                Followers.Add(Target);
-            }
+            Followers.Add(Target);
         }
 
         public bool RemoveFollower(int Target)
         {
-            bool Result = false;
-            lock (Followers)
-            {
-                Result = Followers.Remove(Target);
-            }
-            return Result;
+            return Followers.Remove(Target);
         }
 
         public List<int> GetCurrentFollowers()

@@ -82,6 +82,7 @@ namespace FollowerMazeServer
         public override void Start()
         {
             Worker.Start();
+            base.Start();
         }
 
         public override void Stop()
