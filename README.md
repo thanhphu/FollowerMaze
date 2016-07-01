@@ -22,12 +22,14 @@ Common data shared between Dummy and Connected type
 ###Testing
 ###Performance
 Measured in seconds
+
 | Run | Events     | Time |
 |:----|-----------:|-----:|
 | 1   | 200,000    | 16   |
 | 2   | 200,000    | 12   |
 | 3   | 200,000    | 17   |
 | 4   | 10,000,000 | 519  |
+
 No timeout encountered, all events are received in the correct order, events are disposed as they are processed to not take up space
 
 ###Building
