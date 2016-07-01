@@ -3,7 +3,7 @@
     /// <summary>
     /// Type of payload
     /// </summary>
-    public enum PayloadType
+    enum PayloadType
     {
         /// <summary>
         /// Follow event, Only the To User Id should be notified
@@ -30,7 +30,7 @@
     /// <summary>
     /// Represent a parsed event sent from event source, support parsing via factory method Payload.Create
     /// </summary>
-    public class Payload
+    class Payload
     {
         /// <summary>
         /// Event ID
