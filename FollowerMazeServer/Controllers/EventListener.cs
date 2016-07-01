@@ -10,9 +10,15 @@ namespace FollowerMazeServer
 {
     class EventListener : IDisposable
     {
+        #region Data
+        // Listens for events from event source
         private BackgroundWorker EventListenerWorker = new BackgroundWorker();
-        private BackgroundWorker EventHandlerWorker = new BackgroundWorker();
-        private BackgroundWorker ClientWorker = new BackgroundWorker();
+
+        // Process and send events to client
+        private BackgroundWorker EventDispatchWorker = new BackgroundWorker();
+
+        // Handle connections from client
+        private BackgroundWorker ClientHandlingWorker = new BackgroundWorker();
 
         // Contains unhandled messages to be sent later
         private SortedList<int, Payload> Unhandled;
@@ -23,8 +29,9 @@ namespace FollowerMazeServer
         // Clients connected but didn't sent their ID yet
         private List<ConnectedClient> PendingClients;
 
-        // Index of current message
-        private int ProcessedCount = 1;
+        // ID of the next message
+        private int ProcessedCount = 1; 
+        #endregion
 
         public EventListener()
         {
@@ -35,16 +42,17 @@ namespace FollowerMazeServer
             EventListenerWorker.WorkerSupportsCancellation = true;
             EventListenerWorker.DoWork += EventListenerWorker_DoWork;
 
-            ClientWorker.WorkerSupportsCancellation = true;
-            ClientWorker.DoWork += ClientWorker_DoWork;
+            ClientHandlingWorker.WorkerSupportsCancellation = true;
+            ClientHandlingWorker.DoWork += ClientHandlingWorker_DoWork;
 
-            EventHandlerWorker.WorkerSupportsCancellation = true;
-            EventHandlerWorker.DoWork += EventHandlerWorker_DoWork;
+            EventDispatchWorker.WorkerSupportsCancellation = true;
+            EventDispatchWorker.DoWork += EventDispatchWorker_DoWork;
         }
 
-        private void EventHandlerWorker_DoWork(object sender, DoWorkEventArgs e)
+        #region EventDispatchWorker
+        private void EventDispatchWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            while (!EventHandlerWorker.CancellationPending)
+            while (!EventDispatchWorker.CancellationPending)
             {
                 var UnhandledList = Unhandled.Values;
                 for (int i = 0; i < UnhandledList.Count; i++)
@@ -126,7 +134,9 @@ namespace FollowerMazeServer
             }
             return true;
         }
+        #endregion
 
+        #region EventListenerWorker
         private void EventListenerWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.EventSourcePort);
@@ -193,13 +203,15 @@ namespace FollowerMazeServer
             }
             return Encoding.UTF8.GetBytes(Buffer);
         }
+        #endregion
 
-        private void ClientWorker_DoWork(object sender, DoWorkEventArgs e)
+        #region ClientHandlingWorker
+        private void ClientHandlingWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.ClientConnectionPort);
             Listener.Start();
             Utils.StatusLine($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
-            while (!ClientWorker.CancellationPending)
+            while (!ClientHandlingWorker.CancellationPending)
             {
                 TcpClient Connection = Listener.AcceptTcpClient();
                 ConnectedClient Instance = new ConnectedClient(Connection);
@@ -212,14 +224,6 @@ namespace FollowerMazeServer
                 UpdateStatus();
             }
             Utils.StatusLine("ClientWorker stopped");
-        }
-
-        private void UpdateStatus()
-        {
-            if (ProcessedCount == 0)
-                return;
-            Utils.Status($"Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
-                    $"Messages: Pending={Unhandled.Count} Processed={ProcessedCount - 1}");
         }
 
         private void Instance_IDAvailable(object sender, IDEventArgs e)
@@ -243,29 +247,41 @@ namespace FollowerMazeServer
                 Clients.Remove(e.ID);
             }
         }
+        #endregion
+
+        #region Pattern
+        private void UpdateStatus()
+        {
+            if (ProcessedCount == 0)
+                return;
+            Utils.Status($"Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
+                    $"Messages: Pending={Unhandled.Count} Processed={ProcessedCount - 1}");
+        }
 
         // Implements dispose pattern
         public void Dispose()
         {
             EventListenerWorker.Dispose();
-            ClientWorker.Dispose();
-            EventHandlerWorker.Dispose();
-        }
+            ClientHandlingWorker.Dispose();
+            EventDispatchWorker.Dispose();
+        } 
+        #endregion
 
+        #region Behavior
         public void Start()
         {
             Utils.Log("Event listener starting...");
             EventListenerWorker.RunWorkerAsync();
-            ClientWorker.RunWorkerAsync();
-            EventHandlerWorker.RunWorkerAsync();
+            ClientHandlingWorker.RunWorkerAsync();
+            EventDispatchWorker.RunWorkerAsync();
         }
 
         public void Stop()
         {
             Utils.Log("Event listener stopping...");
             EventListenerWorker.CancelAsync();
-            ClientWorker.CancelAsync();
-            EventHandlerWorker.CancelAsync();
+            ClientHandlingWorker.CancelAsync();
+            EventDispatchWorker.CancelAsync();
 
             // Copy clients list on shutdown to avoid concurrency problems
             foreach (var C in Clients.Values.ToList())
@@ -277,6 +293,7 @@ namespace FollowerMazeServer
             {
                 C.Stop();
             }
-        }
+        } 
+        #endregion
     }
 }
