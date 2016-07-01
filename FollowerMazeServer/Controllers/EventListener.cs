@@ -293,6 +293,8 @@ namespace FollowerMazeServer
             {
                 C.Stop();
             }
+
+            Utils.FlushLog();
         }
         #endregion
     }

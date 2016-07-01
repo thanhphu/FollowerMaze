@@ -10,9 +10,12 @@ namespace FollowerMazeServer
     [ExcludeFromCodeCoverage]
     class Utils
     {
+#if DEBUG
         static List<string> Buffer = new List<string>();
-        const string Path = "E:\\Log.txt";
+        const string Path = "Log.txt";
         static bool First = true;
+#else
+#endif
 
         /// <summary>
         /// Write log to file, with buffer
@@ -29,12 +32,12 @@ namespace FollowerMazeServer
             lock (Buffer)
             {
                 Buffer.Add(Message.TrimEnd());
-                if (Buffer.Count > 1000)
-                {
-                    System.IO.File.AppendAllLines(Path, Buffer);
-                    Buffer.Clear();
-                }
             }
+            if (Buffer.Count > 1000)
+            {
+                FlushLog();
+            }
+
 #else
 #endif
         }
@@ -47,6 +50,22 @@ namespace FollowerMazeServer
         {
 #if DEBUG
             Buffer.Add(System.Text.Encoding.UTF8.GetString(Array));
+#else
+#endif
+        }
+
+
+        /// <summary>
+        /// Write all log entries in buffer to file
+        /// </summary>
+        public static void FlushLog()
+        {
+#if DEBUG
+            lock (Buffer)
+            {
+                System.IO.File.AppendAllLines(Path, Buffer);
+                Buffer.Clear();
+            }
 #else
 #endif
         }
