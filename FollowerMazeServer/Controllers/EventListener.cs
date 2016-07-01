@@ -181,6 +181,7 @@ namespace FollowerMazeServer
         private byte[] ProcessBuffer(byte[] RawBuffer)
         {
             string Buffer = Encoding.UTF8.GetString(RawBuffer);
+            List<Payload> ToAdd = new List<Payload>();
             while (Buffer.Contains("\n"))
             {
                 int Index = Buffer.IndexOf("\n");
@@ -191,10 +192,12 @@ namespace FollowerMazeServer
                 Payload P = Payload.Create(EventData);
                 if (P == null) continue;
 
-                lock (Unhandled)
-                {
+                ToAdd.Add(P);
+            }
+            lock (Unhandled)
+            {
+                foreach (Payload P in ToAdd)
                     Unhandled[P.ID] = P;
-                }
             }
             return Encoding.UTF8.GetBytes(Buffer);
         }
