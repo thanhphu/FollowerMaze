@@ -16,12 +16,30 @@ namespace FollowerMazeTest
             Assert.AreEqual(P.Type, PayloadType.Unfollow);
             Assert.AreEqual(P.From, 270);
             Assert.AreEqual(P.To, 927);
+            Assert.AreEqual(P.ToString(), ToParse + "\r\n");
         }
 
         [TestMethod]
-        public void FailPayloadType()
+        public void FailCase()
+        {
+            var ToParse = "196296|";
+            var P = Payload.Create(ToParse);
+            Assert.IsNull(P);
+        }
+
+        [TestMethod]
+        public void FailPayloadType1()
         {
             var ToParse = "196296|X|270|927";
+            var P = Payload.Create(ToParse);
+            Assert.IsNull(P);
+        }
+
+        [TestMethod]
+        public void FailPayloadType2()
+        {
+            // If we just check the first character, it may be null
+            var ToParse = "196296||270|927";
             var P = Payload.Create(ToParse);
             Assert.IsNull(P);
         }
@@ -48,6 +66,46 @@ namespace FollowerMazeTest
             var ToParse = "ABC|U|270|B";
             var P = Payload.Create(ToParse);
             Assert.IsNull(P);
+        }
+
+        [TestMethod]
+        public void PassBroadcast()
+        {
+            var ToParse = "123|B";
+            var P = Payload.Create(ToParse);
+            Assert.IsNotNull(P);
+        }
+
+        [TestMethod]
+        public void FailStatus()
+        {
+            var ToParse = "123|S";
+            var P = Payload.Create(ToParse);
+            Assert.IsNull(P);
+        }
+
+        [TestMethod]
+        public void PassStatus()
+        {
+            var ToParse = "123|S|456";
+            var P = Payload.Create(ToParse);
+            Assert.IsNotNull(P);
+        }
+
+        [TestMethod]
+        public void FailFollow()
+        {
+            var ToParse = "123|F|456";
+            var P = Payload.Create(ToParse);
+            Assert.IsNull(P);
+        }
+
+        [TestMethod]
+        public void PassFollow()
+        {
+            var ToParse = "123|F|456|789";
+            var P = Payload.Create(ToParse);
+            Assert.IsNotNull(P);
         }
     }
 }

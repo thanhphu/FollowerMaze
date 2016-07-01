@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace FollowerMazeServer
 {
     /// <summary>
     ///  Utility methods
     /// </summary>
+    [ExcludeFromCodeCoverage]
     class Utils
     {
         static List<string> Buffer = new List<string>();

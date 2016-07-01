@@ -32,10 +32,29 @@
     /// </summary>
     public class Payload
     {
+        /// <summary>
+        /// Event ID
+        /// </summary>
         public int ID { get; private set; }
+
+        /// <summary>
+        /// Type of event
+        /// </summary>
         public PayloadType Type { get; private set; }
+
+        /// <summary>
+        /// Originating user
+        /// </summary>
         public int From { get; private set; }
+
+        /// <summary>
+        /// Target user
+        /// </summary>
         public int To { get; private set; }
+
+        /// <summary>
+        /// Source string used to create the payload, to be sent to target clients
+        /// </summary>
         public string Raw { get; private set; }
 
         /// <summary>
