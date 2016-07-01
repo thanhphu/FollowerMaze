@@ -168,7 +168,7 @@ namespace FollowerMazeServer
                         Payload P = Payload.Create(EventData);
                         if (P == null) continue;
                         ToAdd.Add(P);
-                        if (ToAdd.Count > Constants.MessageHoldingLimit)
+                        if (ToAdd.Count > Constants.MessageHoldingLimit || Peek < 0)
                         {
                             AddToUnhandled(ToAdd);
                         }
