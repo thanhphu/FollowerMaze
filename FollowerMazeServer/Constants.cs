@@ -2,6 +2,9 @@
 
 namespace FollowerMazeServer
 {
+    /// <summary>
+    /// Constants used in the app, can be put into configuration file if needed
+    /// </summary>
     public static class Constants
     {
         /// <summary>
@@ -23,7 +26,15 @@ namespace FollowerMazeServer
         /// Listening IP Address
         /// </summary>
         public static readonly IPAddress IP = IPAddress.Any;
+
+        /// <summary>
+        /// Port to listen to event source
+        /// </summary>
         public static readonly int EventSourcePort = 9090;
+
+        /// <summary>
+        /// Port to listen for client connections
+        /// </summary>
         public static readonly int ClientConnectionPort = 9099;
     }
 }
