@@ -20,6 +20,10 @@ Represents clients that actually connect to ClientHandlingWorker's listener, can
 ####AbstractClient
 Common data shared between Dummy and Connected type
 ###Testing
+Full unit test  coverage for data structures. Current CI Status: ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
+
+Manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual) (Windows / Linux / Mac)
+
 ###Performance
 Measured in seconds
 
