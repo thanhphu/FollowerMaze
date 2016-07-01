@@ -40,12 +40,13 @@ namespace FollowerMazeServer
 
         public static void Status(string Message)
         {
-            Console.Write("\r" + Message.PadRight(100));
+            Console.Write("\r" + DateTime.Now.ToLongTimeString() + " " + Message.PadRight(100));
         }
 
         public static void StatusLine(string Message)
         {
-            Console.WriteLine("\r" +(Message).PadRight(100));
+            Status(Message);
+            Console.WriteLine();
         }
     }
 }

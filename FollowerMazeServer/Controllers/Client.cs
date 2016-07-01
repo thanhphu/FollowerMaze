@@ -11,7 +11,7 @@ namespace FollowerMazeServer
     {
         private int ClientID;
         private List<int> Followers = new List<int>();
-        private Queue<Payload> Messages = null;
+        private Queue<Payload> Messages = new Queue<Payload>();
 
         Thread Worker = null;
         TcpClient Connection = null;
@@ -22,11 +22,12 @@ namespace FollowerMazeServer
         // Triggered when the client disconnects
         public event EventHandler<IDEventArgs> OnDisconnect;
 
+        // TODO refactor this and HandOverTo
         public Client(TcpClient Connection)
         {
             Messages = new Queue<Payload>();
             Connection.ReceiveTimeout = -1;
-            Connection.SendTimeout = -1;
+            Connection.SendTimeout = -1;            
             this.Connection = Connection;
             Worker = new Thread(new ThreadStart(ClientMessageHandling));
         }
@@ -42,6 +43,12 @@ namespace FollowerMazeServer
         public void Start()
         {            
             Worker.Start();
+        }
+
+        public void HandOverTo(Client Other)
+        {
+            Other.Followers = new List<int>(this.Followers);
+            Other.Messages = new Queue<Payload>(this.Messages);
         }
 
         public void AddFollower(int Target)
@@ -64,9 +71,8 @@ namespace FollowerMazeServer
 
         public void QueueMessage(Payload Message)
         {
-            // Dummy client
-            if (Messages == null)
-                return;
+            if (Messages.Count > 100 && Connection == null)
+                Messages.Clear();
             lock (Messages)
             {
                 Messages.Enqueue(Message);

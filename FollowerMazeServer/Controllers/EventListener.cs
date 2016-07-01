@@ -227,18 +227,22 @@ namespace FollowerMazeServer
         {
             if (ProcessedCount == 0)
                 return;
-            Utils.Status($"{DateTime.Now.ToLongTimeString()} Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
-                    $"Messages: Pending={Unhandled.Count} Processed={ProcessedCount}  ");
+            Utils.Status($"Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
+                    $"Messages: Pending={Unhandled.Count} Processed={ProcessedCount - 1}");
         }
 
         private void Instance_IDAvailable(object sender, IDEventArgs e)
         {
             Client Instance = (Client)sender;
+            if (Clients.ContainsKey(e.ID))
+            {                
+                Clients[e.ID].HandOverTo(Instance);
+            }            
             lock (Clients)
             {
-                Clients[e.ID] = Instance;
-                PendingClients.Remove(Instance);
-            }
+                Clients[e.ID] = Instance;                    
+            }            
+            PendingClients.Remove(Instance);
         }
 
         private void Instance_OnDisconnect(object sender, IDEventArgs e)
