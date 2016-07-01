@@ -38,7 +38,7 @@ namespace FollowerMazeServer
         byte[] Incoming = new byte[Constants.BufferSize];
 
         /// <summary>
-        /// Asynchronous method called when a client return its ID
+        /// Asynchronous callback method called when a client return its ID
         /// </summary>
         /// <param name="AR"></param>
         private void ProcessClientID(IAsyncResult AR)
