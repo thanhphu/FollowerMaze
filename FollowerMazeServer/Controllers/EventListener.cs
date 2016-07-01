@@ -148,7 +148,6 @@ namespace FollowerMazeServer
 
                 using (StreamReader Reader = new StreamReader(Connection.GetStream(), Encoding.UTF8))
                 {
-                    List<Payload> ToAdd = new List<Payload>();
                     int Peek = Reader.Peek();
                     while (Peek >= 0 || Connection.Connected)
                     {
@@ -169,10 +168,10 @@ namespace FollowerMazeServer
                         Utils.Log($"Received event={EventData}");
                         Payload P = Payload.Create(EventData);
                         if (P == null) continue;
-                        ToAdd.Add(P);
-                        if (ToAdd.Count > Constants.MessageHoldingLimit || Peek < 0)
+                        
+                        lock (Unhandled)
                         {
-                            AddToUnhandled(ToAdd);
+                            Unhandled[P.ID] = P;
                         }
                     }
                 }
@@ -180,16 +179,6 @@ namespace FollowerMazeServer
                 Utils.StatusLine("Event source disconnected");
             }
             Utils.StatusLine("Event source worker terminated");
-        }
-
-        private void AddToUnhandled(List<Payload> ToAdd)
-        {
-            lock (Unhandled)
-            {
-                foreach (Payload iP in ToAdd)
-                    Unhandled[iP.ID] = iP;
-            }
-            ToAdd.Clear();
         }
         #endregion
 
