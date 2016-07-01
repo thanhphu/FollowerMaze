@@ -49,6 +49,7 @@ namespace FollowerMazeServer
             EventDispatchWorker.DoWork += EventDispatchWorker_DoWork;
 
             StatusTimer.Elapsed += StatusTimer_Elapsed;
+            StatusTimer.Enabled = true;
         }
 
         #region EventDispatchWorker
@@ -148,17 +149,19 @@ namespace FollowerMazeServer
                 using (StreamReader Reader = new StreamReader(Connection.GetStream(), Encoding.UTF8))
                 {
                     List<Payload> ToAdd = new List<Payload>();
-                    while (Reader.Peek() >= 0 || Connection.Connected)
+                    int Peek = Reader.Peek();
+                    while (Peek >= 0 || Connection.Connected)
                     {
                         string EventData = "";
                         try
                         {
                             EventData = Reader.ReadLine();
+                            Peek = Reader.Peek();
                         }
-                        catch (Exception E)
+                        catch
                         {
-                            Utils.StatusLine($"Exception {E.Message}");
-                            // Ignore IO errors
+                            if (EventListenerWorker.CancellationPending)
+                                break;
                         }
 
                         // Parse event data
