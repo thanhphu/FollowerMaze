@@ -37,13 +37,17 @@ Measured in seconds
 No timeout encountered, all events are received in the correct order, events are disposed as they are processed to not take up space.
 
 ###Building
-With msbuild installed:
 
 >git clone https://github.com/thanhphu/FollowerMaze.git
 >
 >cd FollowerMaze
 >
->msbuild.exe FollowerMaze.sln /t:Build/p:Configuration=Release;Platform=anycpu
+
+Windows with msbuild
+>msbuild.exe FollowerMaze.sln /t:Build /p:Configuration=Release
+
+Linux with mono and xbuild
+>xbuild /p:Configuration=Release FollowerMaze.sln
 
 ## The Challenge
 The challenge proposed here is to build a system which acts as a socket
