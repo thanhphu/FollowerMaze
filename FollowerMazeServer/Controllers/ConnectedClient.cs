@@ -60,6 +60,8 @@ namespace FollowerMazeServer
                     this.ProcessClientID,
                     networkStream);
 
+                // All writing should be done in this thread, since the overhead of starting a thread is large and the send operation
+                // is blocking, we can just keep the thread alive and occasionally check for messages
                 while (Worker.ThreadState != ThreadState.AbortRequested)
                 {
                     while (Messages.Count > 0)
