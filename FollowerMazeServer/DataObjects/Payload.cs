@@ -30,7 +30,7 @@
     /// <summary>
     /// Represent a parsed event sent from event source, support parsing via factory method Payload.Create
     /// </summary>
-    class Payload
+    public class Payload
     {
         public int ID { get; private set; }
         public PayloadType Type { get; private set; }
