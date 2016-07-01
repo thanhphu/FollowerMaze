@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -21,7 +22,7 @@ namespace FollowerMazeServer
         private BackgroundWorker ClientHandlingWorker = new BackgroundWorker();
 
         // Contains unhandled messages to be sent later
-        private SortedList<int, Payload> Unhandled = new SortedList<int, Payload>();
+        private Dictionary<int, Payload> Unhandled = new Dictionary<int, Payload>();
 
         // List of clients [client ID, client instance]
         private Dictionary<int, AbstractClient> Clients = new Dictionary<int, AbstractClient>();
@@ -30,7 +31,7 @@ namespace FollowerMazeServer
         private List<ConnectedClient> PendingClients = new List<ConnectedClient>();
 
         // ID of the next message
-        private int ProcessedCount = 1; 
+        private int ProcessedCount = 1;
         #endregion
 
         public EventListener()
@@ -50,29 +51,28 @@ namespace FollowerMazeServer
         {
             while (!EventDispatchWorker.CancellationPending)
             {
-                var UnhandledList = Unhandled.Values;
-                for (int i = 0; i < UnhandledList.Count; i++)
+                int Start = ProcessedCount;
+                while (Unhandled.ContainsKey(ProcessedCount))
                 {
-                    var Next = UnhandledList[i];
-                    if (Next.ID == ProcessedCount && PayloadHandled(Next))
+                    if (PayloadHandled(Unhandled[ProcessedCount]))
                     {
                         ProcessedCount++;
-                        continue;
                     }
-                    // Wait for the correct message to come or the client to connect
-                    break;
+                    // Empty the dictionary once in a while
+                    if (ProcessedCount - Start > Constants.ProcessedEventLimit)
+                        break;
                 }
                 lock (Unhandled)
                 {
-                    while (Unhandled.Count > 0 && Unhandled.Values[0].ID < ProcessedCount)
-                        Unhandled.RemoveAt(0);
+                    for (int i = Start; i < ProcessedCount; i++)
+                        Unhandled.Remove(i);
                 }
                 UpdateStatus();
             }
             Utils.StatusLine("EventHandlerWorker stopped");
         }
 
-        private bool CheckAndCreateDummyClient(int ID)
+        private void CheckAndCreateDummyClient(int ID)
         {
             // Adds a "dummy" client if it doesn't exist
             if (!Clients.ContainsKey(ID))
@@ -82,7 +82,6 @@ namespace FollowerMazeServer
                     Clients[ID] = new DummyClient(ID);
                 }
             }
-            return true;
         }
 
         // Handle a payload, returns true if it can be processed now, false otherwise
@@ -92,8 +91,7 @@ namespace FollowerMazeServer
             switch (P.Type)
             {
                 case PayloadType.Follow:
-                    if (!CheckAndCreateDummyClient(P.To))
-                        return false;
+                    CheckAndCreateDummyClient(P.To);
                     Clients[P.To].AddFollower(P.From);
                     Clients[P.To].QueueMessage(P);
                     return true;
@@ -111,8 +109,7 @@ namespace FollowerMazeServer
                     }
                     return true;
                 case PayloadType.Private:
-                    if (!CheckAndCreateDummyClient(P.To))
-                        return false;
+                    CheckAndCreateDummyClient(P.To);
                     Clients[P.To].QueueMessage(P);
                     return true;
                 case PayloadType.Status:
@@ -262,7 +259,7 @@ namespace FollowerMazeServer
             EventListenerWorker.Dispose();
             ClientHandlingWorker.Dispose();
             EventDispatchWorker.Dispose();
-        } 
+        }
         #endregion
 
         #region Behavior
@@ -291,7 +288,7 @@ namespace FollowerMazeServer
             {
                 C.Stop();
             }
-        } 
+        }
         #endregion
     }
 }
