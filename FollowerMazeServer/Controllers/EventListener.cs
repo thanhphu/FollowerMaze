@@ -141,35 +141,31 @@ namespace FollowerMazeServer
                 TcpClient Connection = Listener.AcceptTcpClient();
                 Utils.Log("Event source connected");
 
-                NetworkStream networkStream = Connection.GetStream();
-                byte[] Buffer = new Byte[0];
-
-                while (Connection.Connected)
+                // System.Threading.Thread.Sleep(1000);
+                using (StreamReader Reader = new StreamReader(Connection.GetStream(), Encoding.UTF8))
                 {
-                    // Read new data
-                    byte[] Incoming = new byte[Constants.BufferSize];
-                    int ReadBytes;
-                    try
+                    List<Payload> ToAdd = new List<Payload>();
+                    while (Reader.Peek() >= 0 || Connection.Connected)
                     {
-                        // For some reason, StreamReader has a HUGE performance impact, reading the data
-                        // manually is a bit complicated, but it works
-                        ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
+                        string EventData = "";
+                        try
+                        {
+                            EventData = Reader.ReadLine();
+                        }
+                        catch (Exception E)
+                        {
+                            Utils.StatusLine($"Exception {E.Message}");
+                            // Ignore IO errors
+                        }
+                        Utils.Log($"Received event={EventData}");
+                        Payload P = Payload.Create(EventData);
+                        if (P == null) continue;
+                        ToAdd.Add(P);
+                        if (ToAdd.Count > Constants.MessageHoldingLimit)
+                        {
+                            AddToUnhandled(ToAdd);
+                        }
                     }
-                    catch
-                    {
-                        break;
-                    }
-
-                    // Append the previous data to the new data
-                    int newLength = ReadBytes + Buffer.Length;
-                    byte[] NewBuffer = new byte[newLength];
-                    Array.Copy(Buffer, NewBuffer, Buffer.Length);
-                    Array.Copy(Incoming, 0, NewBuffer, Buffer.Length, ReadBytes);
-                    Buffer = NewBuffer;
-
-                    Buffer = ProcessBuffer(Buffer);
-                    Utils.Log("Remaining buffer");
-                    Utils.Log(Buffer);
                 }
                 Connection.Close();
                 Utils.StatusLine("Event source disconnected");
@@ -177,29 +173,14 @@ namespace FollowerMazeServer
             Utils.StatusLine("Event source worker terminated");
         }
 
-        // Tries to extract events and return the remaining buffer 
-        private byte[] ProcessBuffer(byte[] RawBuffer)
+        private void AddToUnhandled(List<Payload> ToAdd)
         {
-            string Buffer = Encoding.UTF8.GetString(RawBuffer);
-            List<Payload> ToAdd = new List<Payload>();
-            while (Buffer.Contains("\n"))
-            {
-                int Index = Buffer.IndexOf("\n");
-                // Trim() make it works with both \r\n and \n
-                string EventData = Buffer.Substring(0, Index).Trim();
-                Buffer = Buffer.Substring(Index + 1);
-
-                Payload P = Payload.Create(EventData);
-                if (P == null) continue;
-
-                ToAdd.Add(P);
-            }
             lock (Unhandled)
             {
-                foreach (Payload P in ToAdd)
-                    Unhandled[P.ID] = P;
+                foreach (Payload iP in ToAdd)
+                    Unhandled[iP.ID] = iP;
             }
-            return Encoding.UTF8.GetBytes(Buffer);
+            ToAdd.Clear();
         }
         #endregion
 

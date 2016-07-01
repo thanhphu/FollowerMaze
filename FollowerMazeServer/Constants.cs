@@ -12,5 +12,6 @@ namespace FollowerMazeServer
         public static readonly int ClientConnectionPort = 9099;
         // Number of processed events to store in memory before purging, higher means better performance but worse memory usage
         public static readonly int ProcessedEventLimit = 100000;
+        public static readonly int MessageHoldingLimit = 10;
     }
 }
