@@ -1,10 +1,12 @@
-﻿using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 
 namespace FollowerMazeServer
 {
     /// <summary>
     /// Constants used in the app, can be put into configuration file if needed
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static class Constants
     {
         /// <summary>

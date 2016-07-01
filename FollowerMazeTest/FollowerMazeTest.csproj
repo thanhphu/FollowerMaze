@@ -45,11 +45,14 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
+          <Private>False</Private>
+        </Reference>
       </ItemGroup>
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Controllers\DummyClientTest.cs" />
     <Compile Include="DataObjects\PayloadTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -59,8 +62,13 @@
       <Name>FollowerMazeServer</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <None Include="Manual\followermaze.cmd" />
+    <None Include="Manual\followermaze.sh" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Manual\follower-maze-2.0.jar" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
