@@ -95,15 +95,5 @@
             // Append back the line break cut from the protocol
             return Raw + "\r\n";
         }
-
-        private int RetryCount = 0;
-
-        public bool ShouldRetry()
-        {
-            RetryCount++;
-            if (RetryCount > Constants.RetryLimit)
-                return false;
-            return true;
-        }
     }
 }

@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using System.Timers;
 
 namespace FollowerMazeServer
 {
@@ -22,12 +21,9 @@ namespace FollowerMazeServer
 
         // Clients connected but didn't sent their ID yet
         private List<Client> PendingClients;
-
-        // Timer to wait before sending out messages
-        Timer GraceTimer;
-
-        // Number of messages processed, for statistics
-        private int ProcessedCount = 0;        
+              
+        // Index of current message
+        private int ProcessedCount = 1;        
 
         public EventListener()
         {
@@ -49,30 +45,49 @@ namespace FollowerMazeServer
         {
             while (!EventHandlerWorker.CancellationPending)
             {
-                Payload[] UnhandledList;
+                var UnhandledList = Unhandled.Values;
+                for (int i = 0; i < UnhandledList.Count; i++)
+                {
+                    var Next = UnhandledList[i];
+                    if (Next.ID == ProcessedCount && PayloadHandled(Next))
+                    {
+                            ProcessedCount++;
+                        continue;
+                        
+                    }
+                    // Wait for the correct message to come or the client to connect
+                    break;                    
+                }
                 lock (Unhandled)
                 {
-                    UnhandledList = Unhandled.Values.ToArray();
-                }
-                foreach (var UnhandledPayload in UnhandledList)
-                {
-                    if (PayloadHandled(UnhandledPayload))
-                    {
-                        ProcessedCount++;
-                        lock (Unhandled)
-                        {
-                            Unhandled.Remove(UnhandledPayload.ID);
-                        }
-                    }
+                    while (Unhandled.Count > 0 && Unhandled.Values[0].ID < ProcessedCount)
+                        Unhandled.RemoveAt(0);
                 }
                 UpdateStatus();
             }
             Utils.StatusLine("EventHandlerWorker stopped");
         }
 
+
         private bool IsAllClientsConnected()
         {
-            return (Clients.Count > 0) && (PendingClients.Count == 0) && (GraceTimer.Enabled == false);
+            return (Clients.Count > 0) && (PendingClients.Count == 0);
+        }
+
+        private bool CheckAndCreateDummyClient(int ID)
+        {
+            // Adds a "dummy" client if it doesn't exist
+            if (!Clients.ContainsKey(ID))
+            {
+                // Wait for all clients to connect before creating a dummy client
+                if (!IsAllClientsConnected())
+                    return false;
+                lock (Clients)
+                {
+                    Clients[ID] = new Client(ID);
+                }
+            }
+            return true;
         }
 
         // Handle a payload, returns true if it can be processed now, false otherwise
@@ -82,36 +97,29 @@ namespace FollowerMazeServer
             switch (P.Type)
             {
                 case PayloadType.Follow:
-                    // Adds a "dummy" client if it doesn't exist
-                    if (!Clients.ContainsKey(P.To))
-                    {
-                        lock (Clients)
-                        {
-                            Clients[P.To] = new Client(P.To);
-                        }
-                    }                    
+                    if (!CheckAndCreateDummyClient(P.To))
+                        return false;
                     Clients[P.To].AddFollower(P.From);
                     Clients[P.To].QueueMessage(P);
                     return true;
                 case PayloadType.Unfollow:
                     if (Clients.ContainsKey(P.To))
                     {
-                        return Clients[P.To].RemoveFollower(P.From);
+                        Clients[P.To].RemoveFollower(P.From);
                     }
-                    break;
+                    return true;
                 case PayloadType.Broadcast:
-                    foreach (var Entry in Clients.Values)
+                    var Copy = Clients.Values.ToList();
+                    foreach (var Entry in Copy)
                     {
                         Entry.QueueMessage(P);
                     }
                     return true;
                 case PayloadType.Private:
-                    if (Clients.ContainsKey(P.To))
-                    {
-                        Clients[P.To].QueueMessage(P);
-                        return true;
-                    }
-                    break;
+                    if(!CheckAndCreateDummyClient(P.To))
+                        return false;
+                    Clients[P.To].QueueMessage(P);
+                    return true;
                 case PayloadType.Status:
                     if (Clients.ContainsKey(P.From))
                     {
@@ -125,81 +133,74 @@ namespace FollowerMazeServer
                     }
                     break;
             }
-
-            // If all clients connected and the packet is invalid, dispose it
-            // If packet has been retried too many times, dispose it
-            bool ShouldRetry = !IsAllClientsConnected() && P.ShouldRetry();
             return true;
         }
 
         private void EventListenerWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.EventSourcePort);
-            Listener.Start();
-            Utils.StatusLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
-            TcpClient Connection = Listener.AcceptTcpClient();
-            Utils.Log("Event source connected");
+            Listener.Start();           
 
-            // Start the timer
-            GraceTimer.Enabled = true;
-
-            NetworkStream networkStream = Connection.GetStream();
-            byte[] Buffer = new Byte[0];
-
-            // Stop when event source disconnects
-            while (Connection.Connected && !EventListenerWorker.CancellationPending)
+            while (!EventListenerWorker.CancellationPending)
             {
-                // Read new data
-                byte[] Incoming = new byte[Constants.BufferSize];
-                int ReadBytes;
-                try
-                {
-                    ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
-                } catch
-                {
-                    break;
-                }
+                Utils.StatusLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
+                TcpClient Connection = Listener.AcceptTcpClient();
+                Utils.Log("Event source connected");
 
-                // Append the previous data to the new data
-                int newLength = ReadBytes + Buffer.Length;
-                byte[] NewBuffer = new byte[newLength];
-                Array.Copy(Buffer, NewBuffer, Buffer.Length);
-                Array.Copy(Incoming, 0, NewBuffer, Buffer.Length, ReadBytes);
-                Buffer = NewBuffer;
-                
-                Buffer = ProcessBuffer(Buffer);
-                Utils.Log("Remaining buffer");
-                Utils.Log(Buffer);
+                NetworkStream networkStream = Connection.GetStream();
+                byte[] Buffer = new Byte[0];
+
+                while (Connection.Connected)
+                {
+                    // Read new data
+                    byte[] Incoming = new byte[Constants.BufferSize];
+                    int ReadBytes;
+                    try
+                    {
+                        ReadBytes = networkStream.Read(Incoming, 0, Constants.BufferSize);
+                    }
+                    catch
+                    {
+                        break;
+                    }
+
+                    // Append the previous data to the new data
+                    int newLength = ReadBytes + Buffer.Length;
+                    byte[] NewBuffer = new byte[newLength];
+                    Array.Copy(Buffer, NewBuffer, Buffer.Length);
+                    Array.Copy(Incoming, 0, NewBuffer, Buffer.Length, ReadBytes);
+                    Buffer = NewBuffer;
+
+                    Buffer = ProcessBuffer(Buffer);
+                    Utils.Log("Remaining buffer");
+                    Utils.Log(Buffer);
+                }
+                Connection.Close();
+                Utils.StatusLine("Event source disconnected");
             }
-            Connection.Close();
-            Utils.StatusLine("Event source stopped");
-            // Stop();
+            Utils.StatusLine("Event source worker terminated");
         }
 
         // Tries to extract events and return the remaining buffer 
         private byte[] ProcessBuffer(byte[] RawBuffer)
         {
             string Buffer = Encoding.UTF8.GetString(RawBuffer);
-            string UnhandledBuffer = "";
-            string[] Events = Buffer.Split(new char[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string EventData in Events)
+            while (Buffer.Contains("\n"))
             {
-                Utils.Log($"Received event={EventData}");
-                // Try to parse, the event may be partially received (invalid), this will skip it
-                Payload P = Payload.Create(EventData);
-                if (P == null)
-                {
-                    UnhandledBuffer = "\r\n" + EventData;
-                    continue;
-                }
+                int Index = Buffer.IndexOf("\n");
+                // Trim() make it works with both \r\n and \n
+                string EventData = Buffer.Substring(0, Index).Trim();
+                Buffer = Buffer.Substring(Index + 1);
 
-                if (!Unhandled.ContainsKey(P.ID))
-                    lock (Unhandled)
-                    {
-                        Unhandled[P.ID] = P;
-                    }
-            }
-            return Encoding.UTF8.GetBytes(UnhandledBuffer);
+                Payload P = Payload.Create(EventData);
+                if (P == null) continue;
+                
+                lock (Unhandled)
+                {
+                    Unhandled[P.ID] = P;
+                }
+            }            
+            return Encoding.UTF8.GetBytes(Buffer);
         }
         
         private void ClientWorker_DoWork(object sender, DoWorkEventArgs e)
@@ -261,20 +262,9 @@ namespace FollowerMazeServer
             Utils.Log("Event listener starting...");
             EventListenerWorker.RunWorkerAsync();
             ClientWorker.RunWorkerAsync();
-
-            GraceTimer = new Timer();
-            GraceTimer.Interval = Constants.GracePeriod;
-            GraceTimer.Elapsed += GraceTimer_Elapsed;
-
-            UpdateStatus();
-        }
-
-        private void GraceTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            GraceTimer.Enabled = false;
             EventHandlerWorker.RunWorkerAsync();
         }
-
+        
         public void Stop()
         {
             Utils.Log("Event listener stopping...");
