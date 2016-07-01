@@ -33,9 +33,7 @@ namespace FollowerMazeTest.Controllers
         [TestMethod]
         public void TestMethod1()
         {
-            //
-            // TODO: Add test logic here
-            //
+            Assert.IsTrue(true);
         }
     }
 }
