@@ -89,9 +89,9 @@ namespace FollowerMazeServer
                     Thread.Sleep(Constants.WorkerDelay);
                 }
             }
-            catch
+            catch (System.IO.IOException E)
             {
-                Utils.Log($"Client ID={ClientID} shutdown!");
+                Utils.Log($"Client ID={ClientID} shutdown! Message={E.Message}");
             }
             Stop();
         }

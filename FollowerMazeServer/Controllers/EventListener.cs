@@ -60,7 +60,6 @@ namespace FollowerMazeServer
         {
             while (!EventDispatchWorker.CancellationPending)
             {
-                int Start = ProcessedCount;
                 while (Unhandled.ContainsKey(ProcessedCount))
                 {
                     if (IsPayloadHandled(Unhandled[ProcessedCount]))

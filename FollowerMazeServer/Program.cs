@@ -6,7 +6,7 @@ namespace FollowerMazeServer
     [ExcludeFromCodeCoverage]
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             EventListener L = new EventListener();
             L.Start();
