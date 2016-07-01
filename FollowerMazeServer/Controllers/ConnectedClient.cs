@@ -76,7 +76,7 @@ namespace FollowerMazeServer
             }
             catch
             {
-                Utils.Log("Client shutdown!");
+                Utils.Log($"Client ID={ClientID}shutdown!");
             }
             Stop();
         }
