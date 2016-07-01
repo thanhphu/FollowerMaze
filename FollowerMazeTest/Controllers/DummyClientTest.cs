@@ -49,5 +49,7 @@ namespace FollowerMazeTest.Controllers
             Messages.Enqueue(P3);
             Assert.False(C.GetMessages().Contains(P3));
         }
+
+        // TODO test concurrency
     }
 }
