@@ -1,5 +1,4 @@
 # FollowerMazeServer #
-[TOC]
 
 ## T:Controllers.AbstractClient
 
