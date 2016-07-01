@@ -60,19 +60,13 @@ namespace FollowerMazeServer
                 int Start = ProcessedCount;
                 while (Unhandled.ContainsKey(ProcessedCount))
                 {
-                    if (PayloadHandled(Unhandled[ProcessedCount]))
+                    if (IsPayloadHandled(Unhandled[ProcessedCount]))
                     {
+                        lock (Unhandled)
+                            Unhandled.Remove(ProcessedCount);
                         ProcessedCount++;
                     }
-                    // Empty the dictionary once in a while
-                    if (ProcessedCount - Start > Constants.ProcessedEventLimit)
-                        break;
-                }
-                lock (Unhandled)
-                {
-                    for (int i = Start; i < ProcessedCount; i++)
-                        Unhandled.Remove(i);
-                }
+                }                
             }
             Utils.StatusLine("EventHandlerWorker stopped");
         }
@@ -90,7 +84,7 @@ namespace FollowerMazeServer
         }
 
         // Handle a payload, returns true if it can be processed now, false otherwise
-        private bool PayloadHandled(Payload P)
+        private bool IsPayloadHandled(Payload P)
         {
             Utils.Log($"Sending event {P.ToString()}");
             switch (P.Type)
@@ -159,8 +153,6 @@ namespace FollowerMazeServer
                         }
                         catch
                         {
-                            if (EventListenerWorker.CancellationPending)
-                                break;
                             continue;
                         }
                         
@@ -173,6 +165,8 @@ namespace FollowerMazeServer
                         {
                             Unhandled[P.ID] = P;
                         }
+                        if (EventListenerWorker.CancellationPending)
+                            break;
                     }
                 }
                 Connection.Close();
