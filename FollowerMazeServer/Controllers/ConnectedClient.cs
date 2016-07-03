@@ -9,10 +9,15 @@ namespace FollowerMazeServer
     /// <summary>
     /// Repersents a client that actually connect to the server, as opposed to a dummy client
     /// </summary>
-    class ConnectedClient: AbstractClient
+    class ConnectedClient : AbstractClient
     {
         // True if worker is requested to shutdown
         bool ShuttingDown = false;
+
+        /**
+         * Why thread instead of BackgroundWorker? Thread seems to have a bit of higher priority, so it
+         * receives the client ID a bit faster and allowing the processing to continue
+         */
         Thread Worker = null;
         TcpClient Connection = null;
 
@@ -56,7 +61,7 @@ namespace FollowerMazeServer
             {
                 Stop();
             }
-            Logger.Log($"Received ID from client ID={ClientID}");
+            Logger.Log($"Received ID from Client ID={ClientID}");
             InvokeIDEvent();
         }
 
@@ -84,7 +89,7 @@ namespace FollowerMazeServer
                     while (Messages.Count > 0)
                     {
                         Payload Next = Messages.Dequeue();
-                        Logger.Log($"Sending from ClientID={ClientID} message=${Next}");
+                        Logger.Log($"Sending from Client ID={ClientID} message=${Next}");
                         byte[] ToSend = System.Text.Encoding.UTF8.GetBytes(Next.ToString());
                         networkStream.Write(ToSend, 0, ToSend.Length);
                     }
@@ -96,11 +101,11 @@ namespace FollowerMazeServer
             }
             catch (System.IO.IOException E)
             {
-                Logger.Log($"Client ID={ClientID} shutdown with error! Message={E.Message}");
+                Logger.Log($"Client ID={ClientID} error! Message={E.Message}");
                 InvokeDisconnectEvent();
             }
             Logger.Log($"Client ID={ClientID} shutdown");
-            Logger.FlushLog();            
+            Logger.FlushLog();
         }
 
         public override void Start()
@@ -111,7 +116,7 @@ namespace FollowerMazeServer
 
         public override void Stop()
         {
-            ShuttingDown = true;            
+            ShuttingDown = true;
             base.Stop();
         }
     }

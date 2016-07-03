@@ -161,8 +161,9 @@ namespace FollowerMazeServer
                             EventData = Reader.ReadLine();
                             Peek = Reader.Peek();
                         }
-                        catch
+                        catch (IOException E)
                         {
+                            Logger.Log("Listener error! Message=" + E.Message);
                             continue;
                         }
                         if (!string.IsNullOrEmpty(EventData))
