@@ -11,6 +11,8 @@ namespace FollowerMazeServer
     /// </summary>
     class ConnectedClient: AbstractClient
     {
+        // True if worker is requested to shutdown
+        bool ShuttingDown = false;
         Thread Worker = null;
         TcpClient Connection = null;
 
@@ -77,7 +79,7 @@ namespace FollowerMazeServer
 
                 // All writing should be done in this thread, since the overhead of starting a thread is large and the send operation
                 // is blocking, we can just keep the thread alive and occasionally check for messages
-                while (Worker.ThreadState != ThreadState.AbortRequested)
+                while (!ShuttingDown)
                 {
                     while (Messages.Count > 0)
                     {
@@ -88,12 +90,17 @@ namespace FollowerMazeServer
                     }
                     Thread.Sleep(Constants.WorkerDelay);
                 }
+                // Close stream to flush pending data, if any. Listener's stream doesn't need to be closed like this because it's not sending out data
+                Connection.GetStream().Close();
+                Connection.Close();
             }
             catch (System.IO.IOException E)
             {
-                Logger.Log($"Client ID={ClientID} shutdown! Message={E.Message}");
+                Logger.Log($"Client ID={ClientID} shutdown with error! Message={E.Message}");
+                InvokeDisconnectEvent();
             }
-            Stop();
+            Logger.Log($"Client ID={ClientID} shutdown");
+            Logger.FlushLog();            
         }
 
         public override void Start()
@@ -104,16 +111,7 @@ namespace FollowerMazeServer
 
         public override void Stop()
         {
-            Worker.Abort();
-            try
-            {
-                // Close stream to flush pending data, if any. Listener doesn't need to be closed like this because it's not sending out data
-                Connection.GetStream().Close();
-                Connection.Close();
-            } catch (Exception E)
-            {
-                Logger.Log("Error closing connection: " + E.Message);
-            }
+            ShuttingDown = true;            
             base.Stop();
         }
     }

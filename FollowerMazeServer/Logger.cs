@@ -12,7 +12,8 @@ namespace FollowerMazeServer
     {
 #if DEBUG
         static List<string> Buffer = new List<string>();
-        const string Path = "Log.txt";
+        const string LocalLog = "E:\\Log.txt";
+        static string LogFilePath = "Log.txt";
         static bool First = true;
 #else
 #endif
@@ -26,8 +27,11 @@ namespace FollowerMazeServer
 #if DEBUG
             if (First)
             {
+                // Dev machine?
+                if (System.IO.File.Exists(LocalLog))
+                    LogFilePath = LocalLog;
                 First = false;
-                System.IO.File.Delete(Path);
+                System.IO.File.Delete(LogFilePath);
             }
             lock (Buffer)
             {
@@ -63,7 +67,7 @@ namespace FollowerMazeServer
 #if DEBUG
             lock (Buffer)
             {
-                System.IO.File.AppendAllLines(Path, Buffer);
+                System.IO.File.AppendAllLines(LogFilePath, Buffer);
                 Buffer.Clear();
             }
 #else
