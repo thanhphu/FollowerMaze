@@ -139,7 +139,7 @@ namespace FollowerMazeServer
         #endregion
 
         #region EventListenerWorker
-        private async void EventListenerWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void EventListenerWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.EventSourcePort);
             Listener.Start();
@@ -158,7 +158,7 @@ namespace FollowerMazeServer
                         string EventData = "";
                         try
                         {
-                            EventData = await Reader.ReadLineAsync();
+                            EventData = Reader.ReadLine();
                             Peek = Reader.Peek();
                         }
                         catch
