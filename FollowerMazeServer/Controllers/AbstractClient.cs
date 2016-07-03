@@ -13,7 +13,7 @@ namespace FollowerMazeServer.Controllers
     {
         #region Data
         protected int ClientID;
-        protected List<int> Followers = new List<int>();
+        protected HashSet<int> Followers = new HashSet<int>();
         protected Queue<Payload> Messages = new Queue<Payload>();
 
         // Triggered when the client sends its ID
@@ -64,6 +64,8 @@ namespace FollowerMazeServer.Controllers
 
         public void QueueMessage(Payload Message)
         {
+            if (Message == null || Messages.Contains(Message))
+                return;
             lock (Messages)
             {
                 Messages.Enqueue(Message);

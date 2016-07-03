@@ -37,7 +37,7 @@ namespace FollowerMazeServer
         /// <param name="Other">Client to take followers and messages from</param>
         public void TakeOverFrom(AbstractClient Other)
         {
-            this.Followers = new List<int>(Other.GetCurrentFollowers());
+            this.Followers = new HashSet<int>(Other.GetCurrentFollowers());
             this.Messages = new Queue<Payload>(Other.GetMessages());
         }
 
