@@ -90,7 +90,11 @@ namespace FollowerMazeServer
                 {
                     while (Messages.Count > 0)
                     {
-                        Payload Next = Messages.Dequeue();
+                        Payload Next;
+                        lock (Messages)
+                        {
+                            Next = Messages.Dequeue();
+                        }                        
                         Logger.Log($"Sending from Client ID={ClientID} message=${Next}");
                         byte[] ToSend = System.Text.Encoding.UTF8.GetBytes(Next.ToString());
                         networkStream.Write(ToSend, 0, ToSend.Length);
