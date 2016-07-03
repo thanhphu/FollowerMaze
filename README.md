@@ -4,7 +4,7 @@
 Written in C# using features available in the latest version (6.0). It utilizes asynchronous processing using BackgroundWorker (plus Dispose pattern), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen.
 
 Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md). Code style has been checked with Visual Studio's built-in code analysis tool
-###The EventListener
+###The EventListener class
 Controller class, manage all listeners that continously run in the thread pool
 ####EventDispatchWorker
 Check the event list and queue events sequentially to clients
@@ -12,7 +12,7 @@ Check the event list and queue events sequentially to clients
 Listens for events from event source, parse them and add them to the event list
 ####ClientHandlingWorker
 Handles connection from client and create client instances for them
-###The Client(s)
+###The Client classes
 ####DummyClient
 Represents the "clients" in the event stream doesn't actually connects, only referenced. Contains the list of followers and messages intended for them.
 ####ConnectedClient
@@ -22,7 +22,7 @@ Common data shared between Dummy and Connected type
 ###Testing
 Full unit test  coverage for data structures. Current CI Status: ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
 
-Manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual) (Windows / Linux / Mac)
+Manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual) (Windows / Linux / Mac), [JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) required
 
 ###Performance
 Measured in seconds
@@ -38,15 +38,18 @@ No timeout encountered, all events are received in the correct order, events are
 
 ###Building
 
->`git clone https://github.com/thanhphu/FollowerMaze.git`
+>git clone https://github.com/thanhphu/FollowerMaze.git
 >
->`cd FollowerMaze`
+>cd FollowerMaze
+>
 
 Windows with msbuild
->`msbuild.exe FollowerMaze.sln /t:Build /p:Configuration=Release`
+>msbuild.exe FollowerMaze.sln /t:Build /p:Configuration=Release
 
 Linux with mono and xbuild
->`xbuild /p:Configuration=Release FollowerMaze.sln`
+>xbuild /p:Configuration=Release FollowerMaze.sln
+###Running
+Run FollowerMazeServer.exe first, followermaze.cmd later
 
 ## The Challenge
 The challenge proposed here is to build a system which acts as a socket
