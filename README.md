@@ -48,6 +48,8 @@ Windows with msbuild
 
 Linux with mono and xbuild
 >xbuild /p:Configuration=Release FollowerMaze.sln
+>
+
 ###Running
 Run FollowerMazeServer.exe first, followermaze.cmd later
 
