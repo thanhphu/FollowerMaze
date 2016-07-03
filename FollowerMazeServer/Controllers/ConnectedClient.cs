@@ -105,6 +105,15 @@ namespace FollowerMazeServer
         public override void Stop()
         {
             Worker.Abort();
+            try
+            {
+                // Close stream to flush pending data, if any. Listener doesn't need to be closed like this because it's not sending out data
+                Connection.GetStream().Close();
+                Connection.Close();
+            } catch (Exception E)
+            {
+                Logger.Log("Error closing connection: " + E.Message);
+            }
             base.Stop();
         }
     }
