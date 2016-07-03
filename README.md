@@ -1,24 +1,10 @@
 # Back-end Developer Challenge: Follower Maze
 
 ## The Solution
-Written in C# using features available in the latest version (6.0). It utilizes asynchronous processing using BackgroundWorker (plus Dispose pattern), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen.
+Written in C# using features available in the latest version (6.0). It utilizes asynchronous processing using BackgroundWorker (plus Dispose pattern), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen. Object-oriented principles were applied in designing the classes to ensure high code reuse and maintainability.
 
 Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md). Code style has been checked with Visual Studio's built-in code analysis tool
-###The EventListener class
-Controller class, manage all listeners that continously run in the thread pool
-####EventDispatchWorker
-Check the event list and queue events sequentially to clients
-####EventListenerWorker
-Listens for events from event source, parse them and add them to the event list
-####ClientHandlingWorker
-Handles connection from client and create client instances for them
-###The Client classes
-####DummyClient
-Represents the "clients" in the event stream doesn't actually connects, only referenced. Contains the list of followers and messages intended for them.
-####ConnectedClient
-Represents clients that actually connect to ClientHandlingWorker's listener, can take over data from DummyClient
-####AbstractClient
-Common data shared between Dummy and Connected type
+
 ###Testing
 Unit test framework chosen: NUnit 2 (instead of Visual Studio's unit test framework) for interoperability on both Linux and Windows. The latest NUnit version (3) was not chosen because Travis CI doesn't support it.
 
@@ -29,7 +15,7 @@ Current CI Status (unit tests pass/fail): ![CI Status](https://travis-ci.org/tha
 Manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual) (supports Windows / Linux / Mac), [JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) is required
 
 ###Performance
-Measured in seconds
+Measured in seconds, run on 4 cores of an i7-6700HQ @2.7GHz, 4GB of RAM in a VirtualBox VM
 
 | Run | Events     | Time |
 |:----|-----------:|-----:|
@@ -56,6 +42,17 @@ Linux with mono and xbuild
 
 ###Running
 Run FollowerMazeServer.exe first, followermaze.cmd later
+
+###Classes' description
+####The EventListener class
+Controller class, manage the following listeners that continously run in the thread pool
+* **EventDispatchWorker**: Check the event list and queue events sequentially to clients
+* **EventListenerWorker**: Listens for events from event source, parse them and add them to the event list
+* **ClientHandlingWorker**: Handles connection from client and create client instances for them
+####The Client classes
+* **DummyClient**: Represents the "clients" in the event stream doesn't actually connects, only referenced. Contains the list of followers and messages intended for them.
+* **ConnectedClient**: Represents clients that actually connect to ClientHandlingWorker's listener, can take over data from DummyClient
+* **AbstractClient**: Common data shared between Dummy and Connected type
 
 ## The Challenge
 The challenge proposed here is to build a system which acts as a socket
