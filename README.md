@@ -20,9 +20,13 @@ Represents clients that actually connect to ClientHandlingWorker's listener, can
 ####AbstractClient
 Common data shared between Dummy and Connected type
 ###Testing
-Full unit test  coverage for data structures. Current CI Status: ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
+Unit test framework chosen: NUnit 2 (instead of Visual Studio's unit test framework) for interoperability on both Linux and Windows. The latest NUnit version (3) was not chosen because Travis CI doesn't support it.
 
-Manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual) (Windows / Linux / Mac), [JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) required
+Full unit test coverage was implemented for data structures. Classes are tested for their behavior within what NUnit allows, for interaction tests, either cake pattern (make the code much more complicated) or a mock framework is needed (which is against the requirements).
+
+Current CI Status (unit tests pass/fail): ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
+
+Manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual) (supports Windows / Linux / Mac), [JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) is required
 
 ###Performance
 Measured in seconds
