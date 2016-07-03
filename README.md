@@ -46,10 +46,13 @@ Run FollowerMazeServer.exe first, followermaze.cmd later
 ###Classes' description
 ####The EventListener class
 Controller class, manage the following listeners that continously run in the thread pool
+
 * **EventDispatchWorker**: Check the event list and queue events sequentially to clients
 * **EventListenerWorker**: Listens for events from event source, parse them and add them to the event list
 * **ClientHandlingWorker**: Handles connection from client and create client instances for them
+
 ####The Client classes
+
 * **DummyClient**: Represents the "clients" in the event stream doesn't actually connects, only referenced. Contains the list of followers and messages intended for them.
 * **ConnectedClient**: Represents clients that actually connect to ClientHandlingWorker's listener, can take over data from DummyClient
 * **AbstractClient**: Common data shared between Dummy and Connected type
