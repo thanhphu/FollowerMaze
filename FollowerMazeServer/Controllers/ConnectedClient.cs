@@ -84,7 +84,9 @@ namespace FollowerMazeServer
 
                 // All writing should be done in this thread, since the overhead of starting a thread is large and the send operation
                 // is blocking, we can just keep the thread alive and occasionally check for messages
-                while (!ShuttingDown)
+
+                // If there are messages left over, don't shut down just yet, send them out first!
+                while (!ShuttingDown || Messages.Count > 0)
                 {
                     while (Messages.Count > 0)
                     {
