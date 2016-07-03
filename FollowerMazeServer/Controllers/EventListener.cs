@@ -70,7 +70,7 @@ namespace FollowerMazeServer
                     }
                 }                
             }
-            Utils.StatusLine("EventHandlerWorker stopped");
+            Logger.StatusLine("EventHandlerWorker stopped");
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace FollowerMazeServer
         /// <returns>true if payload has been handled, false if retry is needed</returns>
         private bool IsPayloadHandled(Payload P)
         {
-            Utils.Log($"Sending event {P.ToString()}");
+            Logger.Log($"Sending event {P.ToString()}");
             switch (P.Type)
             {
                 case PayloadType.Follow:
@@ -146,9 +146,9 @@ namespace FollowerMazeServer
 
             while (!EventListenerWorker.CancellationPending)
             {
-                Utils.StatusLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
+                Logger.StatusLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
                 TcpClient Connection = Listener.AcceptTcpClient();
-                Utils.Log("Event source connected");
+                Logger.Log("Event source connected");
 
                 using (StreamReader Reader = new StreamReader(Connection.GetStream(), Encoding.UTF8))
                 {
@@ -168,7 +168,7 @@ namespace FollowerMazeServer
                         if (!string.IsNullOrEmpty(EventData))
                         {
                             // Parse event data
-                            Utils.Log($"Received event={EventData}");
+                            Logger.Log($"Received event={EventData}");
                             Payload P = Payload.Create(EventData);
                             if (P == null) continue;
 
@@ -182,9 +182,9 @@ namespace FollowerMazeServer
                     }
                 }
                 Connection.Close();
-                Utils.StatusLine("Event source disconnected");
+                Logger.StatusLine("Event source disconnected");
             }
-            Utils.StatusLine("Event source worker terminated");
+            Logger.StatusLine("Event source worker terminated");
         }
         #endregion
 
@@ -193,19 +193,19 @@ namespace FollowerMazeServer
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.ClientConnectionPort);
             Listener.Start();
-            Utils.StatusLine($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
+            Logger.StatusLine($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
             while (!ClientHandlingWorker.CancellationPending)
             {
                 TcpClient Connection = Listener.AcceptTcpClient();
                 ConnectedClient Instance = new ConnectedClient(Connection);
-                Utils.Log("Client connected");
+                Logger.Log("Client connected");
                 Instance.OnIDAvailable += Instance_IDAvailable;
                 Instance.OnDisconnect += Instance_OnDisconnect;
                 PendingClients.Add(Instance);
 
                 Instance.Start();
             }
-            Utils.StatusLine("ClientWorker stopped");
+            Logger.StatusLine("ClientWorker stopped");
         }
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace FollowerMazeServer
         {
             if (ProcessedCount <= 1)
                 return;
-            Utils.Status($"Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
+            Logger.Status($"Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
                     $"Messages: Pending={Unhandled.Count} Processed={ProcessedCount - 1}");
         }
 
@@ -270,7 +270,7 @@ namespace FollowerMazeServer
         #region Behavior
         public void Start()
         {
-            Utils.Log("Event listener starting...");
+            Logger.Log("Event listener starting...");
             EventListenerWorker.RunWorkerAsync();
             ClientHandlingWorker.RunWorkerAsync();
             EventDispatchWorker.RunWorkerAsync();
@@ -278,7 +278,7 @@ namespace FollowerMazeServer
 
         public void Stop()
         {
-            Utils.Log("Event listener stopping...");
+            Logger.Log("Event listener stopping...");
             EventListenerWorker.CancelAsync();
             ClientHandlingWorker.CancelAsync();
             EventDispatchWorker.CancelAsync();
@@ -294,7 +294,7 @@ namespace FollowerMazeServer
                 C.Stop();
             }
 
-            Utils.FlushLog();
+            Logger.FlushLog();
         }
         #endregion
     }

@@ -54,7 +54,7 @@ namespace FollowerMazeServer
             {
                 Stop();
             }
-            Utils.Log($"Received ID from client ID={ClientID}");
+            Logger.Log($"Received ID from client ID={ClientID}");
             InvokeIDEvent();
         }
 
@@ -82,7 +82,7 @@ namespace FollowerMazeServer
                     while (Messages.Count > 0)
                     {
                         Payload Next = Messages.Dequeue();
-                        Utils.Log($"Sending from ClientID={ClientID} message=${Next}");
+                        Logger.Log($"Sending from ClientID={ClientID} message=${Next}");
                         byte[] ToSend = System.Text.Encoding.UTF8.GetBytes(Next.ToString());
                         networkStream.Write(ToSend, 0, ToSend.Length);
                     }
@@ -91,7 +91,7 @@ namespace FollowerMazeServer
             }
             catch (System.IO.IOException E)
             {
-                Utils.Log($"Client ID={ClientID} shutdown! Message={E.Message}");
+                Logger.Log($"Client ID={ClientID} shutdown! Message={E.Message}");
             }
             Stop();
         }

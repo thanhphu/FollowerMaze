@@ -5,10 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace FollowerMazeServer
 {
     /// <summary>
-    ///  Utility methods
+    /// Logging support, could've used Log4Net, but we should minimize external framework usage
     /// </summary>
     [ExcludeFromCodeCoverage]
-    class Utils
+    class Logger
     {
 #if DEBUG
         static List<string> Buffer = new List<string>();
@@ -79,6 +79,10 @@ namespace FollowerMazeServer
             Console.Write("\r" + DateTime.Now.ToLongTimeString() + " " + Message.PadRight(100));
         }
 
+        /// <summary>
+        /// Write a status message on screen, then a new line
+        /// </summary>
+        /// <param name="Message"></param>
         public static void StatusLine(string Message)
         {
             Status(Message);
