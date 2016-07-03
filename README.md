@@ -1,14 +1,14 @@
 # Back-end Developer Challenge: Follower Maze
 
 ## The Solution
-Written in C# using features available in the latest version (6.0). It utilizes asynchronous processing using BackgroundWorker (plus Dispose pattern), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen. Object-oriented principles were applied in designing the classes to ensure high code reuse and maintainability.
+Written in C# using features available in the latest version (6.0). It utilizes asynchronous processing using BackgroundWorker (plus [Dispose pattern](https://msdn.microsoft.com/en-us/library/b1yfkh5e(v=vs.110).aspx)), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen. Object-oriented principles were applied in designing the classes to ensure high code reuse and maintainability.
 
 Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md). Code style has been checked with Visual Studio's built-in code analysis tool
 
 ###Testing
 Unit test framework chosen: NUnit 2 (instead of Visual Studio's unit test framework) for interoperability on both Linux and Windows. The latest NUnit version (3) was not chosen because Travis CI doesn't support it.
 
-Full unit test coverage was implemented for data structures. Classes are tested for their behavior within what NUnit allows, for interaction tests, either cake pattern (make the code much more complicated) or a mock framework is needed (which is against the requirements).
+Full unit test coverage was implemented for data structures. Classes are tested for their behavior, interaction test is implemented with a simulated event source.
 
 Current CI Status (unit tests pass/fail): ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
 
@@ -42,6 +42,8 @@ Linux with mono and xbuild
 
 ###Running
 Run FollowerMazeServer.exe first, followermaze.cmd later
+
+Press Enter in FollowerMazeServer to terminate it after the event source closes and before running the event source again.
 
 ###Classes' description
 ####The EventListener class
