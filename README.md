@@ -8,7 +8,13 @@ Method-by-method documentation can be viewed [in markdown format](Docs/FollowerM
 ###Testing
 Unit test framework chosen: NUnit 2 (instead of Visual Studio's unit test framework) for interoperability on both Linux and Windows. The latest NUnit version (3) was not chosen because Travis CI doesn't support it.
 
-Full unit test coverage was implemented for data structures. Classes are tested for their behavior, interaction test is implemented with a simulated event source.
+Full unit test coverage was implemented. Classes are tested for their behavior (black box test), interaction test for clients is implemented with simple sockets; for event listener it is implemented with a simulated event source(*TestEventSource*) and clients (*TestClient*).
+
+List of test items
+* **Payload**: Parsing behavior for each field, and each type pass/fail cases
+* **DummyClient** and **AsbtractClient**: Creation, Follower and Message management, concurrency support
+* **ConnectedClient**: Same as above, also includes message sequence test since this class can send messages
+* **EventListener**: Creation, event source connection, client connection, message dispatching
 
 Current CI Status (unit tests pass/fail): ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
 
