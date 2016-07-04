@@ -33,7 +33,7 @@ Measured in seconds, run on 4 cores of an i7-6700HQ @2.6GHz, 4GB of RAM in a Vir
 
 No timeout encountered, all events are received in the correct order.
 
-Performance tuning was done with CPU Profiler. Events are disposed of as they are processed to not take up space.
+Performance tuning was done with CPU Profiler. Events are disposed of as they are processed to not take up space. Typical memory usage for 10,000,000 events hover around 70MB.
 
 ###Building
 
