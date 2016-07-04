@@ -7,7 +7,7 @@ namespace FollowerMazeTest
     public class PayloadTest
     {
         [Test]
-        public void NormalCase()
+        public void PayloadNormalCase()
         {
             var ToParse = "196296|U|270|927";
             var P = Payload.Create(ToParse);
@@ -19,7 +19,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void FailCase()
+        public void PayloadFailCase()
         {
             var ToParse = "196296|";
             var P = Payload.Create(ToParse);
@@ -27,7 +27,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void FailPayloadType1()
+        public void PayloadFailPayloadType1()
         {
             var ToParse = "196296|X|270|927";
             var P = Payload.Create(ToParse);
@@ -35,7 +35,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void FailPayloadType2()
+        public void PayloadFailPayloadType2()
         {
             // If we just check the first character, it may be null
             var ToParse = "196296||270|927";
@@ -44,7 +44,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void FailID()
+        public void PayloadFailID()
         {
             var ToParse = "ABC|U|270|927";
             var P = Payload.Create(ToParse);
@@ -52,7 +52,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void FailTo()
+        public void PayloadFailTo()
         {
             var ToParse = "123|U|A|927";
             var P = Payload.Create(ToParse);
@@ -60,7 +60,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void FailFrom()
+        public void PayloadFailFrom()
         {
             var ToParse = "ABC|U|270|B";
             var P = Payload.Create(ToParse);
@@ -68,7 +68,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void PassBroadcast()
+        public void PayloadPassBroadcast()
         {
             var ToParse = "123|B";
             var P = Payload.Create(ToParse);
@@ -76,7 +76,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void FailStatus()
+        public void PayloadFailStatus()
         {
             var ToParse = "123|S";
             var P = Payload.Create(ToParse);
@@ -84,7 +84,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void PassStatus()
+        public void PayloadPassStatus()
         {
             var ToParse = "123|S|456";
             var P = Payload.Create(ToParse);
@@ -92,7 +92,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void FailFollow()
+        public void PayloadFailFollow()
         {
             var ToParse = "123|F|456";
             var P = Payload.Create(ToParse);
@@ -100,7 +100,7 @@ namespace FollowerMazeTest
         }
 
         [Test]
-        public void PassFollow()
+        public void PayloadPassFollow()
         {
             var ToParse = "123|F|456|789";
             var P = Payload.Create(ToParse);

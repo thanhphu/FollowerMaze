@@ -1,6 +1,8 @@
 ﻿using FollowerMazeServer;
 using FollowerMazeServer.Controllers;
 using NUnit.Framework;
+using System;
+using System.Threading;
 
 namespace FollowerMazeTest.Controllers
 {
@@ -11,9 +13,10 @@ namespace FollowerMazeTest.Controllers
         static Payload P1 = Payload.Create("196296|U|270|927");
         static Payload P2 = Payload.Create("196297|U|271|928");
         static Payload P3 = Payload.Create("196238|U|221|921");
+        static Random R = new Random();
 
         [Test]
-        public void TestDummyCreation()
+        public void DummyCreation()
         {
             AbstractClient C = new DummyClient(1);
             Assert.That(C.GetMessages().Count == 0, "Dummy client's constructor error!");
@@ -39,7 +42,7 @@ namespace FollowerMazeTest.Controllers
         }
 
         [Test]
-        public void TestDummyFollowers()
+        public void DummyFollowers()
         {
             TestFollowers(new DummyClient(1));
         }
@@ -64,11 +67,79 @@ namespace FollowerMazeTest.Controllers
         }
 
         [Test]
-        public void TestDummyMessages()
+        public void DummyMessages()
         {
             TestMessages(new DummyClient(1));
         }
 
-        // TODO test concurrency and message ordering
+        internal static Payload RandomPayload()
+        {
+            
+            return Payload.Create(R.Next().ToString() + "|U|271|928");
+        }
+
+        internal static void TestFollowerConcurrency(AbstractClient C)
+        {
+            const int Iterations = 10000;
+            // Two threads racing each other adding and removing followers
+            new Thread(new ThreadStart(() =>
+            {
+                for (int i = 0; i < Iterations; i++)
+                {
+                    C.AddFollower(R.Next());
+                }
+            })).Start();
+            new Thread(new ThreadStart(() =>
+            {
+                for (int i = 0; i < Iterations; i++)
+                {
+                    var List = C.GetCurrentFollowers();
+                    if (List.Count > 0)
+                    {
+                        C.RemoveFollower(List[R.Next(List.Count)]);
+                    } else
+                    {
+                        // Remove non-existant followers should work too!
+                        C.RemoveFollower(R.Next());
+                    }
+                }
+            })).Start();
+            // No exception should be thrown
+            Assert.Pass();
+        }
+
+        [Test]
+        public void DummyFollowerConcurrency()
+        {
+            TestFollowerConcurrency(new DummyClient(1));
+        }
+
+        internal static void TestMessageConcurrency(AbstractClient C)
+        {
+            const int Iterations = 10000;
+            new Thread(new ThreadStart(() =>
+            {
+                for (int i = 0; i < Iterations; i++)
+                {
+                    C.QueueMessage(RandomPayload());
+                }
+            })).Start();
+            new Thread(new ThreadStart(() =>
+            {
+                for (int i = 0; i < Iterations; i++)
+                {
+                    C.QueueMessage(RandomPayload());
+                }
+            })).Start();
+            // No exception should be thrown
+            Assert.Pass();
+        }
+
+        [Test]
+        public void DummyMessageConcurrency()
+        {
+            TestMessageConcurrency(new DummyClient(1));
+        }
+                
     }
 }
