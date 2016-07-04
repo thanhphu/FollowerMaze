@@ -64,7 +64,6 @@ namespace FollowerMazeServer
                     }
                 }                
             }
-            Logger.StatusLine("EventHandlerWorker stopped");
         }
 
         /// <summary>
@@ -140,7 +139,6 @@ namespace FollowerMazeServer
 
             while (!EventListenerWorker.CancellationPending)
             {
-                Logger.StatusLine($"Event source listener started: {Constants.IP.ToString()}:{Constants.EventSourcePort}");
                 TcpClient Connection = Listener.AcceptTcpClient();
                 Logger.Log("Event source connected");
 
@@ -177,9 +175,7 @@ namespace FollowerMazeServer
                     }
                 }
                 Connection.Close();
-                Logger.StatusLine("Event source disconnected");
             }
-            Logger.StatusLine("Event source worker terminated");
         }
         #endregion
 
@@ -188,7 +184,6 @@ namespace FollowerMazeServer
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.ClientConnectionPort);
             Listener.Start();
-            Logger.StatusLine($"Client listener started: {Constants.IP.ToString()}:{Constants.ClientConnectionPort}");
             while (!ClientHandlingWorker.CancellationPending)
             {
                 TcpClient Connection = Listener.AcceptTcpClient();
@@ -200,7 +195,6 @@ namespace FollowerMazeServer
 
                 Instance.Start();
             }
-            Logger.StatusLine("ClientWorker stopped");
         }
 
         /// <summary>
