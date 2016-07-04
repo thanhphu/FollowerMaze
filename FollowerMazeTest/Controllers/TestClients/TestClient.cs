@@ -1,7 +1,6 @@
 ﻿using FollowerMazeServer;
 using FollowerMazeServer.DataObjects;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -17,9 +16,11 @@ namespace FollowerMazeTest.Controllers
     {
         public int ID { get; private set; }
         bool ShouldStop = false;
+        bool Started = false;
         Thread Worker;
         TcpClient Client = new TcpClient();
         public event EventHandler<MessageEventArgs> OnMessage;
+        public event EventHandler<IDEventArgs> OnConnect;
 
         public TestClient(int ID)
         {
@@ -28,11 +29,15 @@ namespace FollowerMazeTest.Controllers
 
         public void Start()
         {
+            // Only start once
+            if (Started) return;
+            Started = true;
             Client.Connect(IPAddress.Loopback, Constants.ClientConnectionPort);
-            using (StreamWriter Writer = new StreamWriter(Client.GetStream(), Encoding.UTF8))
-            {
-                Writer.WriteLine(ID);
-            }
+            OnConnect?.Invoke(this, new IDEventArgs(ID));
+
+            byte[] IDData = Encoding.UTF8.GetBytes(ID.ToString() + Environment.NewLine);
+            Client.GetStream().Write(IDData, 0, IDData.Length);
+            
             Worker = new Thread(new ThreadStart(async () => {
                 using (StreamReader Reader = new StreamReader(Client.GetStream(), Encoding.UTF8))
                 {
@@ -60,7 +65,10 @@ namespace FollowerMazeTest.Controllers
 
         public void Dispose()
         {
-            Client.Close();
+            if (Started)
+            {
+                Client.Close();
+            }
         }
     }
 }

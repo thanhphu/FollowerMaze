@@ -74,6 +74,8 @@ namespace FollowerMazeServer
             NetworkStream networkStream;
             try
             {
+                // StreamReader / Writer is not used here because they automatically close connections
+                // and we need manual control of the connection
                 networkStream = Connection.GetStream();
                 networkStream.BeginRead(
                     Incoming,

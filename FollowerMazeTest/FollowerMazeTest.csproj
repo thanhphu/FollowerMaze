@@ -105,11 +105,11 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Controllers\ConnectedClientTest.cs" />
-    <Compile Include="Controllers\DummyClientTest.cs" />
-    <Compile Include="Controllers\EventListenerTest.cs" />
-    <Compile Include="Controllers\TestClient.cs" />
-    <Compile Include="Controllers\TestEventSource.cs" />
+    <Compile Include="Controllers\Tests\ConnectedClientTest.cs" />
+    <Compile Include="Controllers\Tests\DummyClientTest.cs" />
+    <Compile Include="Controllers\Tests\EventListenerTest.cs" />
+    <Compile Include="Controllers\TestClients\TestClient.cs" />
+    <Compile Include="Controllers\TestClients\TestEventSource.cs" />
     <Compile Include="DataObjects\PayloadTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

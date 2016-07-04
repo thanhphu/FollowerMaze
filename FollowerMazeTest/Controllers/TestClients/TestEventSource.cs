@@ -1,15 +1,14 @@
 ﻿using FollowerMazeServer;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FollowerMazeTest.Controllers
 {
+    /// <summary>
+    /// A simple implementation of the real event source
+    /// </summary>
     class TestEventSource: IDisposable
     {
         int NumberOfClients;
