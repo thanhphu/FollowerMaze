@@ -50,10 +50,8 @@ namespace FollowerMazeTest.Controllers
         {
             C.QueueMessage(P1);
             C.QueueMessage(P2);
-            C.QueueMessage(P2);
 
             var Messages = C.GetMessages();
-            Assert.That(Messages.Count == 2, "Dummy client's message adding error! A message with the same ID can only be added once!");
             C.QueueMessage(null);
             Assert.That(Messages.Count == 2, "Dummy client's message adding error! Null message should not be queued");
             Assert.That(Messages.Contains(P2), "Dummy client's message adding error!");

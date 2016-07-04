@@ -66,7 +66,7 @@ namespace FollowerMazeServer.Controllers
 
         public void QueueMessage(Payload Message)
         {
-            if (Message == null || Messages.Contains(Message))
+            if (Message == null)
                 return;
             lock (Messages)
             {
