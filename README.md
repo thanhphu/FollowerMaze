@@ -16,7 +16,7 @@ List of test items
 * **ConnectedClient**: Same as above, also includes message sequence test since this class can send messages
 * **EventListener**: Creation, event source connection, client connection, message dispatching
 
-Current CI Status (unit tests pass/fail): ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
+Unit tests are automatically run after each commit with Travis CI. Current CI Status: ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
 
 Manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual) (supports Windows / Linux / Mac), [JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) is required
 
