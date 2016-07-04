@@ -87,9 +87,9 @@ namespace FollowerMazeTest.Controllers
                 };
                 C.Start();
             }
-            const int MessagesToSend = 100;
+            const int MessagesToSend = 50;
             EventSource.SendMessages(MessagesToSend);
-            // Wait until all message are received, or 5s, whichever comes first
+            // Wait until all message are received by clients, or 5s, whichever comes first
             SpinWait.SpinUntil(() => MessagesToSend == MessageCount, 5000);
             Assert.AreEqual(MessagesToSend, MessageCount, "All messages did not get sent");
         }
