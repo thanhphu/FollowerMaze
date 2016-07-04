@@ -1,19 +1,16 @@
 ﻿using FollowerMazeServer;
-using FollowerMazeServer.Controllers;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace FollowerMazeTest.Controllers
 {
     [TestFixture]
-    public class ConnectedClientTest
+    public sealed class ConnectedClientTest: IDisposable
     {
         const int TestPort = 4567;
         TcpListener Server = new TcpListener(IPAddress.Loopback, TestPort);
@@ -50,8 +47,9 @@ namespace FollowerMazeTest.Controllers
             ClientInstance.Stop();
             ClientConnection.Close();
             Server.Stop();
+            GC.SuppressFinalize(this);
         }
-
+        
         [Test]
         public void ConnectedClientCreation()
         {
