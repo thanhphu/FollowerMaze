@@ -8,9 +8,9 @@ namespace FollowerMazeTest.Controllers
     // Test for dummy client (and abstract client)
     public class DummyClientTest
     {
-        Payload P1 = Payload.Create("196296|U|270|927");
-        Payload P2 = Payload.Create("196297|U|271|928");
-        Payload P3 = Payload.Create("196238|U|221|921");
+        static Payload P1 = Payload.Create("196296|U|270|927");
+        static Payload P2 = Payload.Create("196297|U|271|928");
+        static Payload P3 = Payload.Create("196238|U|221|921");
 
         [Test]
         public void TestDummyCreation()
@@ -20,7 +20,7 @@ namespace FollowerMazeTest.Controllers
         }
         
         // Shared with Connected client too
-        internal void TestFollowers(AbstractClient C)
+        internal static void TestFollowers(AbstractClient C)
         {
             
             C.AddFollower(1);
@@ -45,7 +45,7 @@ namespace FollowerMazeTest.Controllers
         }
 
 
-        internal void TestMessages(AbstractClient C)
+        internal static void TestMessages(AbstractClient C)
         {
             C.QueueMessage(P1);
             C.QueueMessage(P2);
