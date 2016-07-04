@@ -15,6 +15,8 @@ namespace FollowerMazeServer
     sealed class EventListener : IDisposable
     {
         #region Data
+        bool Started = false;
+
         // Listens for events from event source
         private BackgroundWorker EventListenerWorker = new BackgroundWorker();
 
@@ -279,31 +281,38 @@ namespace FollowerMazeServer
         #region Behavior
         public void Start()
         {
-            Logger.Log("Event listener starting...");
-            EventListenerWorker.RunWorkerAsync();
-            ClientHandlingWorker.RunWorkerAsync();
-            EventDispatchWorker.RunWorkerAsync();
+            if (!Started)
+            {
+                Logger.Log("Event listener starting...");
+                EventListenerWorker.RunWorkerAsync();
+                ClientHandlingWorker.RunWorkerAsync();
+                EventDispatchWorker.RunWorkerAsync();
+            }
+            Started = true;
         }
 
         public void Stop()
         {
-            Logger.Log("Event listener stopping...");
-            EventListenerWorker.CancelAsync();
-            ClientHandlingWorker.CancelAsync();
-            EventDispatchWorker.CancelAsync();
-
-            // Copy clients list on shutdown to avoid concurrency problems
-            foreach (var C in Clients.Values.ToList())
+            if (Started)
             {
-                C.Stop();
-            }
+                Logger.Log("Event listener stopping...");
+                EventListenerWorker.CancelAsync();
+                ClientHandlingWorker.CancelAsync();
+                EventDispatchWorker.CancelAsync();
 
-            foreach (var C in PendingClients)
-            {
-                C.Stop();
-            }
+                // Copy clients list on shutdown to avoid concurrency problems
+                foreach (var C in Clients.Values.ToList())
+                {
+                    C.Stop();
+                }
 
-            Logger.FlushLog();
+                foreach (var C in PendingClients)
+                {
+                    C.Stop();
+                }
+
+                Logger.FlushLog();
+            }
         }
         #endregion
     }

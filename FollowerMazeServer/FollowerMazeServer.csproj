@@ -116,6 +116,7 @@
     <Compile Include="Controllers\DummyClient.cs" />
     <Compile Include="Controllers\EventListener.cs" />
     <Compile Include="DataObjects\IDEventArgs.cs" />
+    <Compile Include="DataObjects\MessageEventArgs.cs" />
     <Compile Include="DataObjects\Payload.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,4 +1,5 @@
 ﻿using FollowerMazeServer;
+using FollowerMazeServer.DataObjects;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,11 +15,11 @@ namespace FollowerMazeTest.Controllers
     /// </summary>
     sealed class TestClient: IDisposable
     {
-        int ID;
+        public int ID { get; private set; }
         bool ShouldStop = false;
         Thread Worker;
         TcpClient Client = new TcpClient();
-        public readonly List<string> Received = new List<string>();
+        public event EventHandler<MessageEventArgs> OnMessage;
 
         public TestClient(int ID)
         {
@@ -45,7 +46,7 @@ namespace FollowerMazeTest.Controllers
                             Thread.Sleep(Constants.WorkerDelay);
                         }
                         string Line = await Reader.ReadLineAsync();
-                        Received.Add(Line);
+                        OnMessage?.Invoke(this, new MessageEventArgs(ID, Line));
                     } while (!ShouldStop);
                 }
             }));

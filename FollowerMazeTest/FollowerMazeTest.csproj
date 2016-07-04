@@ -109,6 +109,7 @@
     <Compile Include="Controllers\DummyClientTest.cs" />
     <Compile Include="Controllers\EventListenerTest.cs" />
     <Compile Include="Controllers\TestClient.cs" />
+    <Compile Include="Controllers\TestEventSource.cs" />
     <Compile Include="DataObjects\PayloadTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
