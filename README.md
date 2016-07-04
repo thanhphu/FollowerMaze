@@ -1,7 +1,7 @@
 # Back-end Developer Challenge: Follower Maze
 
 ## The Solution
-Developed with C# 6.0, without any external dependency. It utilizes asynchronous processing using BackgroundWorker (plus [Dispose pattern](https://msdn.microsoft.com/en-us/library/b1yfkh5e(v=vs.110).aspx)), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen. Object-oriented principles were applied in designing the classes to ensure high code reuse and maintainability.
+Developed with C# 6.0, without any external dependency. It utilizes asynchronous processing using BackgroundWorker (plus [Dispose pattern](https://msdn.microsoft.com/en-us/library/b1yfkh5e(v=vs.110).aspx)), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen. Object-oriented principles were applied in designing the classes to eliminate duplication, ensure code reuse and maintainability.
 
 Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md). Code style has been checked with Visual Studio's built-in code analysis tool
 
@@ -21,14 +21,15 @@ Current CI Status (unit tests pass/fail): ![CI Status](https://travis-ci.org/tha
 Manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual) (supports Windows / Linux / Mac), [JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) is required
 
 ###Performance
-Measured in seconds, run on 4 cores of an i7-6700HQ @2.7GHz, 4GB of RAM in a VirtualBox VM
+Measured in seconds, run on 4 cores of an i7-6700HQ @2.6GHz, 4GB of RAM in a VirtualBox VM
 
-| Run | Events     | Time |
-|:----|-----------:|-----:|
-| 1   | 200,000    | 16   |
-| 2   | 200,000    | 12   |
-| 3   | 200,000    | 17   |
-| 4   | 10,000,000 | 519  |
+| Run | Events     | Time | Configuration |
+|----:|-----------:|-----:|--------------:|
+| 1   | 200,000    | 16   |Debug|
+| 2   | 200,000    | 12   |Debug|
+| 3   | 200,000    | 17   |Debug|
+| 4   | 10,000,000 | 519  |Debug|
+| 5   | 10,000,000 | 283  |Release|
 
 No timeout encountered, all events are received in the correct order, events are disposed as they are processed to not take up space.
 
