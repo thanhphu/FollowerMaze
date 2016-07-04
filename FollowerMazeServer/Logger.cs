@@ -12,7 +12,6 @@ namespace FollowerMazeServer
     {
 #if DEBUG
         private static List<string> Buffer = new List<string>();
-        private const string LocalLog = "E:\\Log.txt";
         private static string LogFilePath = "Log.txt";
         private static bool First = true;
 #else
@@ -27,9 +26,6 @@ namespace FollowerMazeServer
 #if DEBUG
             if (First)
             {
-                // Dev machine?
-                if (System.IO.File.Exists(LocalLog))
-                    LogFilePath = LocalLog;
                 First = false;
                 System.IO.File.Delete(LogFilePath);
             }
