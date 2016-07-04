@@ -130,6 +130,6 @@ namespace FollowerMazeTest.Controllers
 
             Assert.True(T.Join(5000), "Messsages were not received in time");
         }
-#endif
     }
+#endif
 }

@@ -93,6 +93,6 @@ namespace FollowerMazeTest.Controllers
             SpinWait.SpinUntil(() => MessagesToSend == MessageCount, 5000);
             Assert.AreEqual(MessagesToSend, MessageCount, "All messages did not get sent");
         }
-#endif
     }
+#endif
 }
