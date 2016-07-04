@@ -4,5 +4,5 @@ install:
   - nuget restore FollowerMaze.sln
   - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
 script:
-  - xbuild /p:Configuration=Release FollowerMaze.sln
+  - xbuild /p:Configuration=Release FollowerMaze.sln /p:DefineConstants="TRAVIS"
   - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./FollowerMazeTest/bin/Release/FollowerMazeTest.dll
