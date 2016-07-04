@@ -10,10 +10,10 @@ namespace FollowerMazeTest.Controllers
     // Test for dummy client (and abstract client)
     public class DummyClientTest
     {
-        static Payload P1 = Payload.Create("196296|U|270|927");
-        static Payload P2 = Payload.Create("196297|U|271|928");
-        static Payload P3 = Payload.Create("196238|U|221|921");
-        static Random R = new Random();
+        private static Payload P1 = Payload.Create("196296|U|270|927");
+        private static Payload P2 = Payload.Create("196297|U|271|928");
+        private static Payload P3 = Payload.Create("196238|U|221|921");
+        private static Random R = new Random();
 
         [Test]
         public void DummyCreation()
@@ -21,11 +21,10 @@ namespace FollowerMazeTest.Controllers
             AbstractClient C = new DummyClient(1);
             Assert.That(C.GetMessages().Count == 0, "Dummy client's constructor error!");
         }
-        
+
         // Shared with Connected client too
         internal static void TestFollowers(AbstractClient C)
         {
-            
             C.AddFollower(1);
             C.AddFollower(2);
             // Double add
@@ -46,7 +45,6 @@ namespace FollowerMazeTest.Controllers
         {
             TestFollowers(new DummyClient(1));
         }
-
 
         internal static void TestMessages(AbstractClient C)
         {
@@ -74,7 +72,6 @@ namespace FollowerMazeTest.Controllers
 
         internal static Payload RandomPayload()
         {
-            
             return Payload.Create(R.Next().ToString() + "|U|271|928");
         }
 
@@ -97,7 +94,8 @@ namespace FollowerMazeTest.Controllers
                     if (List.Count > 0)
                     {
                         C.RemoveFollower(List[R.Next(List.Count)]);
-                    } else
+                    }
+                    else
                     {
                         // Remove non-existant followers should work too!
                         C.RemoveFollower(R.Next());
@@ -140,6 +138,5 @@ namespace FollowerMazeTest.Controllers
         {
             TestMessageConcurrency(new DummyClient(1));
         }
-                
     }
 }

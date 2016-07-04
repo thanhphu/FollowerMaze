@@ -3,24 +3,28 @@
     /// <summary>
     /// Type of payload
     /// </summary>
-    enum PayloadType
+    internal enum PayloadType
     {
         /// <summary>
         /// Follow event, Only the To User Id should be notified
         /// </summary>
         Follow,
+
         /// <summary>
         /// Unfollow event, No clients should be notified
         /// </summary>
         Unfollow,
+
         /// <summary>
         /// Broadcast event, All connected user clients should be notified
         /// </summary>
         Broadcast,
+
         /// <summary>
         /// Private message event, Only the To User Id should be notified
         /// </summary>
         Private,
+
         /// <summary>
         /// Status event, All current followers of the From User ID should be notified
         /// </summary>
@@ -30,7 +34,7 @@
     /// <summary>
     /// Represent a parsed event sent from event source, support parsing via factory method Payload.Create
     /// </summary>
-    class Payload
+    internal class Payload
     {
         /// <summary>
         /// Event ID

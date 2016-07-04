@@ -9,13 +9,13 @@ namespace FollowerMazeTest.Controllers
     /// <summary>
     /// A simple implementation of the real event source
     /// </summary>
-    class TestEventSource: IDisposable
+    internal class TestEventSource : IDisposable
     {
-        int NumberOfClients;
-        int MessagesCount = 0;
-        TcpClient Connection;
-        StreamWriter Writer;
-        Random R = new Random();
+        private int NumberOfClients;
+        private int MessagesCount = 0;
+        private TcpClient Connection;
+        private StreamWriter Writer;
+        private Random R = new Random();
 
         public TestEventSource(int NumberOfClients)
         {

@@ -12,10 +12,11 @@ namespace FollowerMazeServer
     /// <summary>
     /// Controller class, manage all listeners
     /// </summary>
-    sealed class EventListener : IDisposable
+    internal sealed class EventListener : IDisposable
     {
         #region Data
-        bool Started = false;
+
+        private bool Started = false;
 
         // Listens for events from event source
         private BackgroundWorker EventListenerWorker = new BackgroundWorker();
@@ -37,7 +38,8 @@ namespace FollowerMazeServer
 
         // ID of the next message
         private int ProcessedCount = 1;
-        #endregion
+
+        #endregion Data
 
         public EventListener()
         {
@@ -48,10 +50,11 @@ namespace FollowerMazeServer
             ClientHandlingWorker.DoWork += ClientHandlingWorker_DoWork;
 
             EventDispatchWorker.WorkerSupportsCancellation = true;
-            EventDispatchWorker.DoWork += EventDispatchWorker_DoWork;            
+            EventDispatchWorker.DoWork += EventDispatchWorker_DoWork;
         }
 
         #region EventDispatchWorker
+
         private void EventDispatchWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             while (!EventDispatchWorker.CancellationPending)
@@ -64,7 +67,7 @@ namespace FollowerMazeServer
                             Unhandled.Remove(ProcessedCount);
                         ProcessedCount++;
                     }
-                }                
+                }
             }
         }
 
@@ -99,12 +102,14 @@ namespace FollowerMazeServer
                     Clients[P.To].AddFollower(P.From);
                     Clients[P.To].QueueMessage(P);
                     return true;
+
                 case PayloadType.Unfollow:
                     if (Clients.ContainsKey(P.To))
                     {
                         Clients[P.To].RemoveFollower(P.From);
                     }
                     return true;
+
                 case PayloadType.Broadcast:
                     var Copy = Clients.Values.ToList();
                     foreach (var Entry in Copy)
@@ -112,10 +117,12 @@ namespace FollowerMazeServer
                         Entry.QueueMessage(P);
                     }
                     return true;
+
                 case PayloadType.Private:
                     CheckAndCreateDummyClient(P.To);
                     Clients[P.To].QueueMessage(P);
                     return true;
+
                 case PayloadType.Status:
                     if (Clients.ContainsKey(P.From))
                     {
@@ -131,9 +138,11 @@ namespace FollowerMazeServer
             }
             return true;
         }
-        #endregion
+
+        #endregion EventDispatchWorker
 
         #region EventListenerWorker
+
         private void EventListenerWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.EventSourcePort);
@@ -179,9 +188,11 @@ namespace FollowerMazeServer
                 Connection.Close();
             }
         }
-        #endregion
+
+        #endregion EventListenerWorker
 
         #region ClientHandlingWorker
+
         private void ClientHandlingWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             TcpListener Listener = new TcpListener(Constants.IP, Constants.ClientConnectionPort);
@@ -230,9 +241,11 @@ namespace FollowerMazeServer
                 Clients.Remove(e.ID);
             }
         }
-        #endregion
+
+        #endregion ClientHandlingWorker
 
         #region Statistics
+
         public int PendingClientsCount
         {
             get
@@ -252,7 +265,7 @@ namespace FollowerMazeServer
         public int PendingMessagesCount
         {
             get
-            { 
+            {
                 return Unhandled.Count;
             }
         }
@@ -264,9 +277,11 @@ namespace FollowerMazeServer
                 return ProcessedCount - 1;
             }
         }
-        #endregion
+
+        #endregion Statistics
 
         #region DisposePattern
+
         /// <summary>
         /// Implements dispose pattern for the worker objects
         /// </summary>
@@ -276,9 +291,11 @@ namespace FollowerMazeServer
             ClientHandlingWorker.Dispose();
             EventDispatchWorker.Dispose();
         }
-        #endregion
+
+        #endregion DisposePattern
 
         #region Behavior
+
         public void Start()
         {
             if (!Started)
@@ -314,6 +331,7 @@ namespace FollowerMazeServer
                 Logger.FlushLog();
             }
         }
-        #endregion
+
+        #endregion Behavior
     }
 }

@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FollowerMazeServer.Controllers
 {
     /// <summary>
     /// Common method and data shared between dummy and connnected client
     /// </summary>
-    abstract class AbstractClient
+    internal abstract class AbstractClient
     {
         #region Data
+
         protected int ClientID;
         protected HashSet<int> Followers = new HashSet<int>();
         protected Queue<Payload> Messages = new Queue<Payload>();
@@ -21,7 +19,8 @@ namespace FollowerMazeServer.Controllers
 
         // Triggered when the client disconnects
         public event EventHandler<IDEventArgs> OnDisconnect;
-        #endregion
+
+        #endregion Data
 
         protected AbstractClient()
         {
@@ -39,6 +38,7 @@ namespace FollowerMazeServer.Controllers
         }
 
         #region Follower handling
+
         public void AddFollower(int Target)
         {
             Followers.Add(Target);
@@ -54,9 +54,11 @@ namespace FollowerMazeServer.Controllers
             // Returns a copy
             return new List<int>(Followers);
         }
-        #endregion
+
+        #endregion Follower handling
 
         #region Message handling
+
         public Queue<Payload> GetMessages()
         {
             return new Queue<Payload>(Messages);
@@ -71,9 +73,11 @@ namespace FollowerMazeServer.Controllers
                 Messages.Enqueue(Message);
             }
         }
-        #endregion
-        
+
+        #endregion Message handling
+
         #region Behavior
+
         public virtual void Start()
         {
         }
@@ -82,6 +86,7 @@ namespace FollowerMazeServer.Controllers
         {
             InvokeDisconnectEvent();
         }
-        #endregion
+
+        #endregion Behavior
     }
 }

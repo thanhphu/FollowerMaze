@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using FollowerMazeServer;
+﻿using FollowerMazeServer;
+using NUnit.Framework;
 
 namespace FollowerMazeTest
 {

@@ -4,9 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace FollowerMazeServer
 {
     [ExcludeFromCodeCoverage]
-    class Program
+    internal class Program
     {
-        static void Main()
+        private static void Main()
         {
             EventListener L = new EventListener();
 
@@ -18,7 +18,7 @@ namespace FollowerMazeServer
                     $"Messages: Pending={L.PendingMessagesCount} Processed={L.ProcessedMessagesCount}");
             };
             StatusTimer.Enabled = true;
-            
+
             L.Start();
             Console.WriteLine("Press ENTER to stop listening");
             Console.ReadLine();

@@ -2,21 +2,17 @@
 using FollowerMazeServer.DataObjects;
 using NUnit.Framework;
 using System;
-using System.IO;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 
 namespace FollowerMazeTest.Controllers
 {
     [TestFixture]
-    public sealed class EventListenerTest: IDisposable
+    public sealed class EventListenerTest : IDisposable
     {
-        const int ClientsCount = 5;
-        TestClient[] Clients = new TestClient[ClientsCount];
-        TestEventSource EventSource = new TestEventSource(ClientsCount);
-        EventListener L;
+        private const int ClientsCount = 5;
+        private TestClient[] Clients = new TestClient[ClientsCount];
+        private TestEventSource EventSource = new TestEventSource(ClientsCount);
+        private EventListener L;
 
         [TestFixtureSetUp]
         public void Init()
@@ -63,7 +59,7 @@ namespace FollowerMazeTest.Controllers
         public void EventListener3ClientConnection()
         {
             int ConnectedCount = 0;
-            foreach(TestClient C in Clients)
+            foreach (TestClient C in Clients)
             {
                 C.OnConnect += (object Client, IDEventArgs E) =>
                 {

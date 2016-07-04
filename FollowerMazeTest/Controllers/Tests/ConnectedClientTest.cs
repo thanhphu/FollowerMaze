@@ -10,15 +10,18 @@ using System.Threading;
 namespace FollowerMazeTest.Controllers
 {
     [TestFixture]
-    public sealed class ConnectedClientTest: IDisposable
+    public sealed class ConnectedClientTest : IDisposable
     {
-        const int TestPort = 4567;
-        TcpListener Server = new TcpListener(IPAddress.Loopback, TestPort);
+        private const int TestPort = 4567;
+        private TcpListener Server = new TcpListener(IPAddress.Loopback, TestPort);
+
         // Connection on client side
-        TcpClient ClientConnection = new TcpClient();
+        private TcpClient ClientConnection = new TcpClient();
+
         // Connection on server side
-        TcpClient ServerConnection;
-        ConnectedClient ClientInstance = null;
+        private TcpClient ServerConnection;
+
+        private ConnectedClient ClientInstance = null;
 
         [TestFixtureSetUp]
         public void Init()
@@ -49,11 +52,10 @@ namespace FollowerMazeTest.Controllers
             Server.Stop();
             GC.SuppressFinalize(this);
         }
-        
+
         [Test]
         public void ConnectedClientCreation()
         {
-            
             Assert.That(ClientInstance.GetMessages().Count == 0, "ConnectedClient's constructor error!");
         }
 

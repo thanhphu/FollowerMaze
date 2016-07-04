@@ -8,13 +8,13 @@ namespace FollowerMazeServer
     /// Logging support, could've used Log4Net, but we should minimize external framework usage
     /// </summary>
     [ExcludeFromCodeCoverage]
-    class Logger
+    internal class Logger
     {
 #if DEBUG
-        static List<string> Buffer = new List<string>();
-        const string LocalLog = "E:\\Log.txt";
-        static string LogFilePath = "Log.txt";
-        static bool First = true;
+        private static List<string> Buffer = new List<string>();
+        private const string LocalLog = "E:\\Log.txt";
+        private static string LogFilePath = "Log.txt";
+        private static bool First = true;
 #else
 #endif
 
@@ -57,7 +57,6 @@ namespace FollowerMazeServer
 #else
 #endif
         }
-
 
         /// <summary>
         /// Write all log entries in buffer to file

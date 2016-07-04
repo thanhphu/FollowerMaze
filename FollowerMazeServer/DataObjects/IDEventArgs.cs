@@ -7,7 +7,7 @@ namespace FollowerMazeServer
     /// Data class used in events to pass client ID around
     /// </summary>
     [ExcludeFromCodeCoverage]
-    class IDEventArgs : EventArgs
+    internal class IDEventArgs : EventArgs
     {
         public int ID { get; private set; }
 

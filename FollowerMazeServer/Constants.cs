@@ -22,7 +22,7 @@ namespace FollowerMazeServer
         /// <summary>
         /// Time between each iteration inside client's thread. Messages will only be sent out once during this perioud
         /// </summary>
-        public static readonly int WorkerDelay = 100; // in ms. 
+        public static readonly int WorkerDelay = 100; // in ms.
 
         /// <summary>
         /// Listening IP Address

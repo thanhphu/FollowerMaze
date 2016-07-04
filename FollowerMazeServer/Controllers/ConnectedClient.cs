@@ -9,17 +9,17 @@ namespace FollowerMazeServer
     /// <summary>
     /// Repersents a client that actually connect to the server, as opposed to a dummy client
     /// </summary>
-    class ConnectedClient : AbstractClient
+    internal class ConnectedClient : AbstractClient
     {
         // True if worker is requested to shutdown
-        bool ShuttingDown = false;
+        private bool ShuttingDown = false;
 
         /**
          * Why thread instead of BackgroundWorker? Thread seems to have a bit of higher priority, so it
          * receives the client ID a bit faster and allowing the processing to continue
          */
-        Thread Worker = null;
-        TcpClient Connection = null;
+        private Thread Worker = null;
+        private TcpClient Connection = null;
 
         public ConnectedClient(TcpClient Connection)
         {
@@ -42,7 +42,7 @@ namespace FollowerMazeServer
         }
 
         // Buffer to read client ID, shared between ProcessClientID and ClientMessageHandling
-        byte[] Incoming = new byte[Constants.BufferSize];
+        private byte[] Incoming = new byte[Constants.BufferSize];
 
         /// <summary>
         /// Asynchronous callback method called when a client return its ID
@@ -53,7 +53,7 @@ namespace FollowerMazeServer
             NetworkStream networkStream = (NetworkStream)AR.AsyncState;
             int ReadBytes = networkStream.EndRead(AR);
 
-            // Read client ID            
+            // Read client ID
             string ID = System.Text.Encoding.UTF8.GetString(Incoming, 0, ReadBytes);
 
             // Invalid client ID? Close this connection
@@ -96,7 +96,7 @@ namespace FollowerMazeServer
                         lock (Messages)
                         {
                             Next = Messages.Dequeue();
-                        }                        
+                        }
                         Logger.Log($"Sending from Client ID={ClientID} message=${Next}");
                         byte[] ToSend = System.Text.Encoding.UTF8.GetBytes(Next.ToString());
                         networkStream.Write(ToSend, 0, ToSend.Length);

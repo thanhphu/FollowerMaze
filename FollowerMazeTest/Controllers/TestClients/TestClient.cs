@@ -12,14 +12,16 @@ namespace FollowerMazeTest.Controllers
     /// <summary>
     /// Simulates real client, actually a reimplementation in C#
     /// </summary>
-    sealed class TestClient: IDisposable
+    internal sealed class TestClient : IDisposable
     {
         public int ID { get; private set; }
-        bool ShouldStop = false;
-        bool Started = false;
-        Thread Worker;
-        TcpClient Client = new TcpClient();
+        private bool ShouldStop = false;
+        private bool Started = false;
+        private Thread Worker;
+        private TcpClient Client = new TcpClient();
+
         public event EventHandler<MessageEventArgs> OnMessage;
+
         public event EventHandler<IDEventArgs> OnConnect;
 
         public TestClient(int ID)
@@ -37,8 +39,9 @@ namespace FollowerMazeTest.Controllers
 
             byte[] IDData = Encoding.UTF8.GetBytes(ID.ToString() + Environment.NewLine);
             Client.GetStream().Write(IDData, 0, IDData.Length);
-            
-            Worker = new Thread(new ThreadStart(async () => {
+
+            Worker = new Thread(new ThreadStart(async () =>
+            {
                 using (StreamReader Reader = new StreamReader(Client.GetStream(), Encoding.UTF8))
                 {
                     do
@@ -46,7 +49,8 @@ namespace FollowerMazeTest.Controllers
                         if (ShouldStop)
                         {
                             break;
-                        } else
+                        }
+                        else
                         {
                             Thread.Sleep(Constants.WorkerDelay);
                         }
