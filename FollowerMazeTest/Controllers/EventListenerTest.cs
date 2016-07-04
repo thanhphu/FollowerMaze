@@ -33,5 +33,11 @@ namespace FollowerMazeTest.Controllers
         {
             Assert.NotNull(L, "Cannot create an instance of EventListener");
         }
+
+        [Test]
+        public void EventListener1()
+        {
+            Assert.NotNull(L, "Cannot create an instance of EventListener");
+        }
     }
 }

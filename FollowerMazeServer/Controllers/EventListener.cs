@@ -12,7 +12,7 @@ namespace FollowerMazeServer
     /// <summary>
     /// Controller class, manage all listeners
     /// </summary>
-    class EventListener : IDisposable
+    sealed class EventListener : IDisposable
     {
         #region Data
         // Listens for events from event source
@@ -23,9 +23,6 @@ namespace FollowerMazeServer
 
         // Handle connections from client
         private BackgroundWorker ClientHandlingWorker = new BackgroundWorker();
-
-        // Write status update on screen
-        private System.Timers.Timer StatusTimer = new System.Timers.Timer(Constants.StatusInterval);
 
         // Contains unhandled messages to be sent later
         private Dictionary<int, Payload> Unhandled = new Dictionary<int, Payload>();
@@ -49,10 +46,7 @@ namespace FollowerMazeServer
             ClientHandlingWorker.DoWork += ClientHandlingWorker_DoWork;
 
             EventDispatchWorker.WorkerSupportsCancellation = true;
-            EventDispatchWorker.DoWork += EventDispatchWorker_DoWork;
-
-            StatusTimer.Elapsed += StatusTimer_Elapsed;
-            StatusTimer.Enabled = true;
+            EventDispatchWorker.DoWork += EventDispatchWorker_DoWork;            
         }
 
         #region EventDispatchWorker
@@ -242,20 +236,41 @@ namespace FollowerMazeServer
         }
         #endregion
 
-        #region Pattern
-        /// <summary>
-        /// Update status on screen
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void StatusTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        #region Statistics
+        public int PendingClientsCount
         {
-            if (ProcessedCount <= 1)
-                return;
-            Logger.Status($"Clients: Pending={PendingClients.Count} Connected={Clients.Count} " +
-                    $"Messages: Pending={Unhandled.Count} Processed={ProcessedCount - 1}");
+            get
+            {
+                return PendingClients.Count;
+            }
         }
 
+        public int ConnectedClientsCount
+        {
+            get
+            {
+                return Clients.Count;
+            }
+        }
+
+        public int PendingMessagesCount
+        {
+            get
+            { 
+                return Unhandled.Count;
+            }
+        }
+
+        public int ProcessedMessagesCount
+        {
+            get
+            {
+                return ProcessedCount - 1;
+            }
+        }
+        #endregion
+
+        #region DisposePattern
         /// <summary>
         /// Implements dispose pattern for the worker objects
         /// </summary>
@@ -264,7 +279,6 @@ namespace FollowerMazeServer
             EventListenerWorker.Dispose();
             ClientHandlingWorker.Dispose();
             EventDispatchWorker.Dispose();
-            StatusTimer.Dispose();
         }
         #endregion
 
