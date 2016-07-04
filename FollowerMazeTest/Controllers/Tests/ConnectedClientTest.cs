@@ -9,13 +9,12 @@ using System.Threading;
 
 namespace FollowerMazeTest.Controllers
 {
-    
+    // The CI doesn't go well with sockets, test passed on local
+#if (!TRAVIS)
+
     [TestFixture]
     public sealed class ConnectedClientTest : IDisposable
     {
-        // The CI doesn't go well with sockets, test passed on local
-#if (!TRAVIS)
-
         private const int TestPort = 4567;
         private TcpListener Server = new TcpListener(IPAddress.Loopback, TestPort);
 

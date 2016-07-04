@@ -6,11 +6,12 @@ using System.Threading;
 
 namespace FollowerMazeTest.Controllers
 {
+    // The CI doesn't go well with sockets, test passed on local
+#if (!TRAVIS)
+
     [TestFixture]
     public sealed class EventListenerTest : IDisposable
-    {
-        // The CI doesn't go well with sockets, test passed on local
-#if (!TRAVIS)
+    {        
         private const int ClientsCount = 5;
         private TestClient[] Clients = new TestClient[ClientsCount];
         private TestEventSource EventSource = new TestEventSource(ClientsCount);
