@@ -1,7 +1,7 @@
 # Back-end Developer Challenge: Follower Maze
 
 ## The Solution
-Written in C# using features available in the latest version (6.0). It utilizes asynchronous processing using BackgroundWorker (plus [Dispose pattern](https://msdn.microsoft.com/en-us/library/b1yfkh5e(v=vs.110).aspx)), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen. Object-oriented principles were applied in designing the classes to ensure high code reuse and maintainability.
+Developed with C# 6.0, without any external dependency. It utilizes asynchronous processing using BackgroundWorker (plus [Dispose pattern](https://msdn.microsoft.com/en-us/library/b1yfkh5e(v=vs.110).aspx)), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen. Object-oriented principles were applied in designing the classes to ensure high code reuse and maintainability.
 
 Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md). Code style has been checked with Visual Studio's built-in code analysis tool
 
