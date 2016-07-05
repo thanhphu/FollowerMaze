@@ -18,7 +18,7 @@ List of test items
 
 Unit tests are automatically run after each commit with Travis CI. Current CI Status: ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
 
-Manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual) (supports Windows / Linux / Mac), [JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) is required
+Ready built server and manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual), [JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) is required
 
 ###Performance
 Measured in seconds, run on 4 cores of an i7-6700HQ @2.6GHz, 4GB of RAM in a VirtualBox VM
