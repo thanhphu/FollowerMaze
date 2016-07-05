@@ -3,7 +3,7 @@
 ## The Solution
 Developed with C# 6.0, without any external dependency. It utilizes asynchronous processing using BackgroundWorker (plus [Dispose pattern](https://msdn.microsoft.com/en-us/library/b1yfkh5e(v=vs.110).aspx)), Threads, and EventHandler pattern to avoid blocking and react swiftly to events as soon as they happen. Object-oriented principles were applied in designing the classes to eliminate duplication, ensure code reuse and maintainability.
 
-Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md). Code style has been checked with Visual Studio's built-in code analysis tool
+Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md). Code style has been checked with Visual Studio's built-in code analysis tool. Code cleanup was done with [Code Maid extension](http://www.codemaid.net/).
 
 ###Testing
 Unit test framework chosen: NUnit 2 (instead of Visual Studio's unit test framework) for interoperability on both Linux and Windows. The latest NUnit version (3) was not chosen because Travis CI doesn't support it.
@@ -16,7 +16,7 @@ List of test items
 * **ConnectedClient**: Same as above, also includes message sequence test since this class can send messages
 * **EventListener**: Creation, event source connection, client connection, message dispatching
 
-Current CI Status (unit tests pass/fail): ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
+Unit tests are automatically run after each commit with Travis CI. Current CI Status: ![CI Status](https://travis-ci.org/thanhphu/FollowerMaze.svg?branch=master)
 
 Manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual) (supports Windows / Linux / Mac), [JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) is required
 
@@ -31,7 +31,9 @@ Measured in seconds, run on 4 cores of an i7-6700HQ @2.6GHz, 4GB of RAM in a Vir
 | 4   | 10,000,000 | 519  |Debug|
 | 5   | 10,000,000 | 283  |Release|
 
-No timeout encountered, all events are received in the correct order, events are disposed as they are processed to not take up space.
+No timeout encountered, all events are received in the correct order.
+
+Performance tuning was done with CPU Profiler. Events are disposed of as they are processed to not take up space. Typical memory usage for 10,000,000 events hover around 70MB.
 
 ###Building
 
@@ -48,9 +50,9 @@ Linux with mono and xbuild
 >
 
 ###Running
-Run FollowerMazeServer.exe first, followermaze.cmd later
+Run FollowerMazeServer.exe first, and then followermaze.cmd (manual test client).
 
-Press Enter in FollowerMazeServer to terminate it after the event source closes and before running the event source again.
+Press Enter in FollowerMazeServer to terminate it after the event source closes.
 
 ###Classes' description
 ####The EventListener class
