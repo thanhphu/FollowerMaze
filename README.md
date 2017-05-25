@@ -5,7 +5,7 @@ Developed with C# 6.0, without any external dependency. It utilizes asynchronous
 
 Method-by-method documentation can be viewed [in markdown format](Docs/FollowerMazeServer.GeneratedXmlDoc.md). Code style has been checked with Visual Studio's built-in code analysis tool. Code cleanup was done with [Code Maid extension](http://www.codemaid.net/).
 
-###Testing
+### Testing
 Unit test framework chosen: NUnit 2 (instead of Visual Studio's unit test framework) for interoperability on both Linux and Windows. The latest NUnit version (3) was not chosen because Travis CI doesn't support it.
 
 Full unit test coverage was implemented. Classes are tested for their behavior (black box test), interaction test for clients is implemented with simple sockets; for event listener it is implemented with a simulated event source(*TestEventSource*) and clients (*TestClient*).
@@ -20,7 +20,7 @@ Unit tests are automatically run after each commit with Travis CI. Current CI St
 
 Ready built server and manual test client can be downloaded from [FollowerMazeTest](FollowerMazeTest/Manual), [JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) is required
 
-###Performance
+### Performance
 Measured in seconds, run on 4 cores of an i7-6700HQ @2.6GHz, 4GB of RAM in a VirtualBox VM
 
 | Run | Events     | Time | Configuration |
@@ -35,7 +35,7 @@ No timeout encountered, all events are received in the correct order.
 
 Performance tuning was done with CPU Profiler. Events are disposed of as they are processed to not take up space. Typical memory usage for 10,000,000 events hover around 70MB.
 
-###Building
+### Building
 
 >git clone https://github.com/thanhphu/FollowerMaze.git
 >
@@ -49,20 +49,20 @@ Linux with mono and xbuild
 >xbuild /p:Configuration=Release FollowerMaze.sln
 >
 
-###Running
+### Running
 Run FollowerMazeServer.exe first, and then followermaze.cmd (manual test client).
 
 Press Enter in FollowerMazeServer to terminate it after the event source closes.
 
-###Classes' description
-####The EventListener class
+### Classes' description
+#### The EventListener class
 Controller class, manage the following listeners that continously run in the thread pool
 
 * **EventDispatchWorker**: Check the event list and queue events sequentially to clients
 * **EventListenerWorker**: Listens for events from event source, parse them and add them to the event list
 * **ClientHandlingWorker**: Handles connection from client and create client instances for them
 
-####The Client classes
+#### The Client classes
 
 * **DummyClient**: Represents the "clients" in the event stream doesn't actually connects, only referenced. Contains the list of followers and messages intended for them.
 * **ConnectedClient**: Represents clients that actually connect to ClientHandlingWorker's listener, can take over data from DummyClient
